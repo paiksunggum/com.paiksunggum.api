@@ -40,7 +40,12 @@ engine = None
 AsyncSessionLocal = None
 
 if database_url:
-    engine = create_async_engine(database_url, echo=False)
+    engine = create_async_engine(
+        database_url,
+        echo=False,
+        pool_pre_ping=True,
+        pool_recycle=300,
+    )
     AsyncSessionLocal = async_sessionmaker(
         engine,
         class_=AsyncSession,

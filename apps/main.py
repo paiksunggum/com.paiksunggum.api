@@ -2,6 +2,7 @@ import logging
 import sys
 
 from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy.exc import OperationalError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,7 +48,10 @@ app = FastAPI(title="TJ Watson Main Page")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -156,6 +160,11 @@ async def signup(req: SignupRequest, db: AsyncSession = Depends(get_db)):
         )
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e)) from e
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="데이터베이스 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ) from e
     return SignupResponse(message="회원가입이 완료되었습니다.")
 
 
@@ -165,6 +174,11 @@ async def login(req: UserLoginSchema, db: AsyncSession = Depends(get_db)):
         await UserController(db).login_user(req)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e)) from e
+    except OperationalError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="데이터베이스 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ) from e
     return UserLoginResponse(message="로그인에 성공했습니다.")
 
 
