@@ -1,4 +1,5 @@
 import os
+import logging
 from collections.abc import AsyncGenerator
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from sqlalchemy.orm import DeclarativeBase
 _backend_root = Path(__file__).resolve().parent.parent
 load_dotenv(_backend_root / ".env")
 load_dotenv(find_dotenv(usecwd=True), override=False)
+logger = logging.getLogger("apps.database")
 
 def normalize_async_database_url(url: str) -> str:
     u = url.strip()
@@ -86,10 +88,27 @@ async def create_tables() -> None:
         return
     from sqlmodel import SQLModel
 
-    from apps.secom.app.models.user import User  # noqa: F401
+    from apps.forma.app.models import (  # noqa: F401
+        Ad as FormaAd,
+        AdLink as FormaAdLink,
+        Feedback as FormaFeedback,
+        Frame as FormaFrame,
+        Practice as FormaPractice,
+        Sport as FormaSport,
+        Subscription as FormaSubscription,
+        User as FormaUser,
+        Video as FormaVideo,
+    )
+    from apps.secom.app.models.user import User as SecomUser  # noqa: F401
+
+    table_names = sorted(SQLModel.metadata.tables.keys())
+    for table_name in table_names:
+        logger.info("[DB] preparing table: %s", table_name)
 
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+
+    logger.info("[DB] prepared %d tables", len(table_names))
 
 
 async def dispose_engine() -> None:

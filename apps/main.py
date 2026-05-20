@@ -39,12 +39,15 @@ from .chat.app.chat_page import chat_page_html
 from .chat.app.chloe_controller import ChloeController
 from .chat.app.schemas import ChatRequest, ChatResponse
 from .database import create_tables, get_db, neon_now
+from .forma.app.forma_routes import router as forma_router
 from .titanic.app.james_controller import JamesController
 from .weather.app.schemas import WeatherResponse
 from .weather.app.weather_controller import WeatherController
 
 
 app = FastAPI(title="TJ Watson Main Page")
+
+app.include_router(forma_router)
 
 app.add_middleware(
     CORSMiddleware,
