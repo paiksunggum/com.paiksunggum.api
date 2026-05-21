@@ -15,7 +15,7 @@ class Practice(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"name": "id"},
     )
-    user_id: int = Field(foreign_key="user.id", index=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
     sport_id: int = Field(foreign_key="sports.id", index=True)
     video_id: int | None = Field(default=None, foreign_key="videos.id", index=True)
     note: str | None = Field(default=None, max_length=1000)

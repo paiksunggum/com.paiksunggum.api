@@ -15,7 +15,7 @@ class Ad(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"name": "id"},
     )
-    owner_user_id: int = Field(foreign_key="user.id", index=True)
+    owner_user_id: int = Field(foreign_key="users.id", index=True)
     title: str = Field(max_length=200)
     product_url: str = Field(max_length=1000)
     image_url: str | None = Field(default=None, max_length=1000)

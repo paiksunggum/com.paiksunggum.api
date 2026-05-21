@@ -1,8 +1,7 @@
 from pathlib import Path
-
 import pandas as pd
 
-_DATA_DIR = Path(__file__).resolve().parent
+_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 _CSV_PATH = _DATA_DIR / "Titanic-Dataset.csv"
 
 

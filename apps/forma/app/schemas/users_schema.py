@@ -1,13 +1,11 @@
-from datetime import datetime
-
 from pydantic import BaseModel, Field
 
 
 class FormaUserCreateRequest(BaseModel):
-    user_id: str = Field(..., min_length=1, max_length=100)
+    user_id: str = Field(..., min_length=1, max_length=255)
     email: str = Field(..., min_length=1, max_length=255)
-    name: str = Field(..., min_length=1, max_length=100)
-    role: str = Field(default="user", min_length=1, max_length=30)
+    name: str = Field(..., min_length=1, max_length=255)
+    role: str = Field(default="user", min_length=1, max_length=32)
 
 
 class FormaUserResponse(BaseModel):
@@ -16,6 +14,5 @@ class FormaUserResponse(BaseModel):
     email: str
     name: str
     role: str
-    created_at: datetime
 
     model_config = {"from_attributes": True}

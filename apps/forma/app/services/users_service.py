@@ -1,6 +1,10 @@
+import secrets
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models.users_model import User
+from apps.secom.app.models.user import User
+from apps.secom.app.security import hash_password
+
 from ..repositories.users_repository import UsersRepository
 from ..schemas.users_schema import FormaUserCreateRequest
 
@@ -16,8 +20,11 @@ class UsersService:
 
         user = User(
             user_id=req.user_id,
+            password_hash=hash_password(secrets.token_urlsafe(32)),
             email=req.email,
             name=req.name,
+            birthdate="00000000",
+            gender="none",
             role=req.role,
         )
         return await self.users_repository.create(user)

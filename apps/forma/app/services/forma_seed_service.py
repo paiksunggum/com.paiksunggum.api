@@ -11,7 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models.ad_link_model import AdLink
 from ..models.ads_model import Ad
 from ..models.sports_model import Sport
-from ..models.users_model import User
+import secrets
+
+from apps.secom.app.models.user import User
+from apps.secom.app.security import hash_password
 from ..models.video_model import Video
 from ..schemas.seed_schema import SeedDemoCsvResponse
 
@@ -93,8 +96,11 @@ class FormaSeedService:
 
         user = User(
             user_id="forma_csv_demo",
+            password_hash=hash_password(secrets.token_urlsafe(32)),
             email="forma_csv_demo@example.invalid",
             name="CSV Demo User",
+            birthdate="00000000",
+            gender="none",
             role="user",
         )
         sport = Sport(

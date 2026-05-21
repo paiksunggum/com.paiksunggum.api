@@ -96,10 +96,9 @@ async def create_tables() -> None:
         Practice as FormaPractice,
         Sport as FormaSport,
         Subscription as FormaSubscription,
-        User as FormaUser,
         Video as FormaVideo,
     )
-    from apps.secom.app.models.user import User as SecomUser  # noqa: F401
+    from apps.secom.app.models.user import User  # noqa: F401
 
     table_names = sorted(SQLModel.metadata.tables.keys())
     for table_name in table_names:

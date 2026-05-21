@@ -5,7 +5,6 @@ from .frame_model import Frame
 from .practice_model import Practice
 from .sports_model import Sport
 from .subscriptions_model import Subscription
-from .users_model import User
 from .video_model import Video
 
 __all__ = [
@@ -16,6 +15,5 @@ __all__ = [
     "Practice",
     "Sport",
     "Subscription",
-    "User",
     "Video",
 ]

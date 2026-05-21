@@ -15,7 +15,7 @@ class Video(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"name": "id"},
     )
-    user_id: int = Field(foreign_key="user.id", index=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
     sport_id: int = Field(foreign_key="sports.id", index=True)
     title: str = Field(max_length=200)
     video_url: str = Field(max_length=1000)

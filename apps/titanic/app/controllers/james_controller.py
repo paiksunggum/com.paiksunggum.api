@@ -1,4 +1,4 @@
-from .jack_service import JackService
+from ..services.jack_service import JackService
 
 
 class JamesController:
