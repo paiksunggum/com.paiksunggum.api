@@ -14,12 +14,12 @@ class UsersService:
         self.users_repository = UsersRepository(session)
 
     async def create_user(self, req: FormaUserCreateRequest) -> User:
-        existing = await self.users_repository.get_by_user_id(req.user_id)
+        existing = await self.users_repository.get_by_login_id(req.login_id)
         if existing is not None:
-            raise ValueError("이미 사용 중인 user_id 입니다.")
+            raise ValueError("이미 사용 중인 login_id 입니다.")
 
         user = User(
-            user_id=req.user_id,
+            login_id=req.login_id,
             password_hash=hash_password(secrets.token_urlsafe(32)),
             email=req.email,
             name=req.name,

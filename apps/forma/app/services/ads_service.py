@@ -11,10 +11,10 @@ class AdsService:
 
     async def create_ad(self, req: AdCreateRequest) -> Ad:
         row = Ad(
-            owner_user_id=req.owner_user_id,
             title=req.title,
-            product_url=req.product_url,
             image_url=req.image_url,
+            target_url=req.target_url,
+            budget=req.budget,
             status=req.status,
         )
         return await self.ads_repository.create(row)

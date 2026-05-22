@@ -3,11 +3,10 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class FeedbackCreateRequest(BaseModel):
-    video_id: int
+class FeedbackNestedCreateRequest(BaseModel):
     frame_id: int | None = None
     source_type: str = Field(default="system", max_length=20)
-    comment: str = Field(..., min_length=1, max_length=1000)
+    comment: str = Field(..., min_length=1, max_length=2000)
     score: float | None = Field(default=None, ge=0, le=100)
 
 

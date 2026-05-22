@@ -1,10 +1,11 @@
-from datetime import datetime, timezone
+from datetime import datetime
+from typing import Any
 
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
 
-
-def now_utc() -> datetime:
-    return datetime.now(timezone.utc)
+from .model_utils import now_utc
 
 
 class Practice(SQLModel, table=True):
@@ -15,8 +16,16 @@ class Practice(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"name": "id"},
     )
-    user_id: int = Field(foreign_key="users.id", index=True)
-    sport_id: int = Field(foreign_key="sports.id", index=True)
-    video_id: int | None = Field(default=None, foreign_key="videos.id", index=True)
-    note: str | None = Field(default=None, max_length=1000)
-    practiced_at: datetime = Field(default_factory=now_utc)
+    sports_id: int = Field(
+        foreign_key="sports.id",
+        index=True,
+        sa_column_kwargs={"name": "sport_id"},
+    )
+    title: str = Field(max_length=200)
+    description: str | None = Field(default=None, max_length=1000)
+    guide_json: dict[str, Any] | None = Field(
+        default=None,
+        sa_column=Column(JSONB, nullable=True),
+    )
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=now_utc)

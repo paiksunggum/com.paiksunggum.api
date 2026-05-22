@@ -11,5 +11,5 @@ class PracticeController:
     async def create_practice(self, req: PracticeCreateRequest):
         return await self.service.create_practice(req)
 
-    async def list_practices(self):
-        return await self.service.list_practices()
+    async def list_practices(self, sport_id: int | None = None):
+        return await self.service.list_practices(sport_id)

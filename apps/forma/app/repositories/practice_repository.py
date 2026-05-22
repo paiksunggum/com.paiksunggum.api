@@ -14,6 +14,18 @@ class PracticeRepository:
         await self.session.refresh(row)
         return row
 
-    async def list_all(self) -> list[Practice]:
-        r = await self.session.execute(select(Practice).order_by(Practice.id.desc()))
-        return list(r.scalars().all())
+    async def list_by_sport_id(self, sport_id: int) -> list[Practice]:
+        result = await self.session.execute(
+            select(Practice)
+            .where(Practice.sports_id == sport_id)
+            .order_by(Practice.id.desc())
+        )
+        return list(result.scalars().all())
+
+    async def list_active(self) -> list[Practice]:
+        result = await self.session.execute(
+            select(Practice)
+            .where(Practice.is_active.is_(True))
+            .order_by(Practice.id.desc())
+        )
+        return list(result.scalars().all())

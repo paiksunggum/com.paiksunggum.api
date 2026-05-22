@@ -14,9 +14,9 @@ class UsersRepository:
         await self.session.refresh(user)
         return user
 
-    async def get_by_user_id(self, user_id: str) -> User | None:
+    async def get_by_login_id(self, login_id: str) -> User | None:
         result = await self.session.execute(
-            select(User).where(User.user_id == user_id)
+            select(User).where(User.login_id == login_id)
         )
         return result.scalar_one_or_none()
 

@@ -11,12 +11,17 @@ class PracticeService:
 
     async def create_practice(self, req: PracticeCreateRequest) -> Practice:
         row = Practice(
-            user_id=req.user_id,
-            sport_id=req.sport_id,
-            video_id=req.video_id,
-            note=req.note,
+            sports_id=req.sports_id,
+            title=req.title,
+            description=req.description,
+            guide_json=req.guide_json,
+            is_active=req.is_active,
         )
         return await self.practice_repository.create(row)
 
-    async def list_practices(self) -> list[Practice]:
-        return await self.practice_repository.list_all()
+    async def list_practices(
+        self, sport_id: int | None = None
+    ) -> list[Practice]:
+        if sport_id is not None:
+            return await self.practice_repository.list_by_sport_id(sport_id)
+        return await self.practice_repository.list_active()

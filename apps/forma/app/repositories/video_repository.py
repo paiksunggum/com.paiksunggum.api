@@ -14,6 +14,10 @@ class VideoRepository:
         await self.session.refresh(row)
         return row
 
-    async def list_all(self) -> list[Video]:
-        result = await self.session.execute(select(Video).order_by(Video.id.desc()))
+    async def list_by_user_id(self, user_id: int) -> list[Video]:
+        result = await self.session.execute(
+            select(Video)
+            .where(Video.user_id == user_id)
+            .order_by(Video.id.desc())
+        )
         return list(result.scalars().all())

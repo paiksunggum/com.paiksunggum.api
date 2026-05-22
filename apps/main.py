@@ -36,6 +36,7 @@ from .secom.app.schemas import (
 )
 from .secom.app.schemas.user_schema import UserLoginSchema, UserSchema
 from .chat.app.chat_page import chat_page_html
+from .home_page import home_page_html
 from .chat.app.chloe_controller import ChloeController
 from .chat.app.schemas import ChatRequest, ChatResponse
 from .database import create_tables, get_db, neon_now
@@ -66,9 +67,9 @@ async def on_startup() -> None:
     await create_tables()
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def read_root():
-    return {"message": "FAST API 메인 페이지 ", "docs": "/docs"}
+    return home_page_html()
 
 
 @app.get("/db-check")

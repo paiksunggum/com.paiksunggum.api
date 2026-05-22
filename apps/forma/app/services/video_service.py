@@ -12,13 +12,13 @@ class VideoService:
     async def create_video(self, req: VideoCreateRequest) -> Video:
         row = Video(
             user_id=req.user_id,
-            sport_id=req.sport_id,
+            sports_id=req.sports_id,
             title=req.title,
-            video_url=req.video_url,
+            storage_url=req.storage_url,
             duration_sec=req.duration_sec,
             visibility=req.visibility,
         )
         return await self.video_repository.create(row)
 
-    async def list_videos(self) -> list[Video]:
-        return await self.video_repository.list_all()
+    async def list_videos_by_user(self, user_id: int) -> list[Video]:
+        return await self.video_repository.list_by_user_id(user_id)

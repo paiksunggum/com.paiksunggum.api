@@ -1,4 +1,8 @@
+from datetime import datetime
+
 from sqlmodel import Field, SQLModel
+
+from .model_utils import now_utc
 
 
 class AdLink(SQLModel, table=True):
@@ -11,6 +15,6 @@ class AdLink(SQLModel, table=True):
     )
     video_id: int = Field(foreign_key="videos.id", index=True)
     ad_id: int = Field(foreign_key="ads.id", index=True)
-    placement_type: str = Field(default="description", max_length=30)
-    start_sec: int | None = Field(default=None, ge=0)
-    end_sec: int | None = Field(default=None, ge=0)
+    placement_type: str = Field(default="overlay", max_length=30)
+    exposed_at: datetime = Field(default_factory=now_utc)
+    created_at: datetime = Field(default_factory=now_utc)

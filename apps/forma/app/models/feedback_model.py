@@ -1,10 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlmodel import Field, SQLModel
 
-
-def now_utc() -> datetime:
-    return datetime.now(timezone.utc)
+from .model_utils import now_utc
 
 
 class Feedback(SQLModel, table=True):
@@ -18,6 +16,6 @@ class Feedback(SQLModel, table=True):
     video_id: int = Field(foreign_key="videos.id", index=True)
     frame_id: int | None = Field(default=None, foreign_key="frames.id", index=True)
     source_type: str = Field(default="system", max_length=20)
-    comment: str = Field(max_length=1000)
+    comment: str = Field(max_length=2000)
     score: float | None = Field(default=None, ge=0, le=100)
     created_at: datetime = Field(default_factory=now_utc)

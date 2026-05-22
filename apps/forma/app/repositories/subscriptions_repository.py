@@ -14,8 +14,14 @@ class SubscriptionsRepository:
         await self.session.refresh(row)
         return row
 
-    async def list_all(self) -> list[Subscription]:
-        r = await self.session.execute(
-            select(Subscription).order_by(Subscription.id.desc())
+    async def get_active_by_user_id(self, user_id: int) -> Subscription | None:
+        result = await self.session.execute(
+            select(Subscription)
+            .where(
+                Subscription.user_id == user_id,
+                Subscription.status == "active",
+            )
+            .order_by(Subscription.id.desc())
+            .limit(1)
         )
-        return list(r.scalars().all())
+        return result.scalar_one_or_none()

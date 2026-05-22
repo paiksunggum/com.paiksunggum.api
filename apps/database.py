@@ -89,14 +89,21 @@ async def create_tables() -> None:
     from sqlmodel import SQLModel
 
     from apps.forma.app.models import (  # noqa: F401
-        Ad as FormaAd,
-        AdLink as FormaAdLink,
-        Feedback as FormaFeedback,
-        Frame as FormaFrame,
-        Practice as FormaPractice,
-        Sport as FormaSport,
-        Subscription as FormaSubscription,
-        Video as FormaVideo,
+        Ad,
+        AdLink,
+        AdStatsDaily,
+        AnalysisHistory,
+        Feedback,
+        FeedbackComment,
+        Frame,
+        PaymentLog,
+        Practice,
+        Sport,
+        Subscription,
+        UserSkill,
+        UsersAd,
+        Video,
+        VideoPracticeMatch,
     )
     from apps.secom.app.models.user import User  # noqa: F401
 

@@ -21,7 +21,7 @@ class UserService:
             user_schema.user_id,
             user_schema.email,
         )
-        if await self.user_repository.get_by_user_id(user_schema.user_id) is not None:
+        if await self.user_repository.get_by_login_id(user_schema.user_id) is not None:
             raise ValueError("이미 사용 중인 아이디입니다.")
 
         role = (
@@ -30,7 +30,7 @@ class UserService:
             else str(user_schema.role)
         )
         user = User(
-            user_id=user_schema.user_id,
+            login_id=user_schema.user_id,
             password_hash=hash_password(user_schema.password),
             email=user_schema.email,
             name=user_schema.name,
@@ -45,7 +45,7 @@ class UserService:
 
     async def login_user(self, login: UserLoginSchema) -> User:
         logger.info("[UserService] login_user — user_id=%s", login.user_id)
-        user = await self.user_repository.get_by_user_id(login.user_id)
+        user = await self.user_repository.get_by_login_id(login.user_id)
         if user is None:
             user = await self.user_repository.get_by_email(login.user_id)
         if user is None or not verify_password(login.password, user.password_hash):

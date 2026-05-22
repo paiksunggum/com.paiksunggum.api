@@ -1,6 +1,8 @@
 import io
 import logging
 import os
+import secrets
+from decimal import Decimal
 from pathlib import Path
 
 import httpx
@@ -8,13 +10,13 @@ import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apps.secom.app.models.user import User
+from apps.secom.app.security import hash_password
+
 from ..models.ad_link_model import AdLink
 from ..models.ads_model import Ad
 from ..models.sports_model import Sport
-import secrets
-
-from apps.secom.app.models.user import User
-from apps.secom.app.security import hash_password
+from ..models.users_ad_model import UsersAd
 from ..models.video_model import Video
 from ..schemas.seed_schema import SeedDemoCsvResponse
 
@@ -25,6 +27,7 @@ _LOCAL_SAMPLE = _DATA_DIR / "country-list-sample.csv"
 _DEFAULT_REMOTE_CSV = (
     "https://raw.githubusercontent.com/datasets/country-list/master/data.csv"
 )
+_DEMO_LOGIN_ID = "forma_csv_demo"
 
 
 def _resolve_csv_url() -> str:
@@ -51,7 +54,7 @@ class FormaSeedService:
     ) -> SeedDemoCsvResponse:
         url = _resolve_csv_url()
         existing = await self.session.execute(
-            select(User).where(User.user_id == "forma_csv_demo")
+            select(User).where(User.login_id == _DEMO_LOGIN_ID)
         )
         if existing.scalar_one_or_none() is not None:
             return SeedDemoCsvResponse(
@@ -95,7 +98,7 @@ class FormaSeedService:
             raise ValueError("적재할 데모 행이 없습니다.")
 
         user = User(
-            user_id="forma_csv_demo",
+            login_id=_DEMO_LOGIN_ID,
             password_hash=hash_password(secrets.token_urlsafe(32)),
             email="forma_csv_demo@example.invalid",
             name="CSV Demo User",
@@ -115,44 +118,55 @@ class FormaSeedService:
         assert user.id is not None
         assert sport.id is not None
 
-        videos = []
-        ads = []
+        videos: list[Video] = []
+        ads: list[Ad] = []
         for name, code in pairs:
-            v = Video(
-                user_id=user.id,
-                sport_id=sport.id,
-                title=f"Demo clip: {name}",
-                video_url=f"https://example.net/forma-demo/video/{code.lower()}",
-                duration_sec=120,
-                visibility="public",
+            videos.append(
+                Video(
+                    user_id=user.id,
+                    sports_id=sport.id,
+                    title=f"Demo clip: {name}",
+                    storage_url=f"https://example.net/forma-demo/video/{code.lower()}",
+                    duration_sec=120,
+                    visibility="public",
+                )
             )
-            a = Ad(
-                owner_user_id=user.id,
-                title=f"Demo ad: {name}",
-                product_url=f"https://example.net/forma-demo/product/{code.lower()}",
-                image_url=None,
-                status="active",
+            ads.append(
+                Ad(
+                    title=f"Demo ad: {name}",
+                    target_url=f"https://example.net/forma-demo/product/{code.lower()}",
+                    image_url=None,
+                    budget=Decimal("1000"),
+                    status="active",
+                )
             )
-            videos.append(v)
-            ads.append(a)
 
         for v, a in zip(videos, ads):
             self.session.add(v)
             self.session.add(a)
         await self.session.flush()
 
-        ad_links = []
+        ad_links: list[AdLink] = []
+        users_ads: list[UsersAd] = []
         for v, a in zip(videos, ads):
             assert v.id is not None and a.id is not None
+            users_ads.append(
+                UsersAd(
+                    user_id=user.id,
+                    ad_id=a.id,
+                    contract_status="active",
+                    allocated_budget=Decimal("500"),
+                )
+            )
             ad_links.append(
                 AdLink(
                     video_id=v.id,
                     ad_id=a.id,
                     placement_type="description",
-                    start_sec=0,
-                    end_sec=30,
                 )
             )
+        for ua in users_ads:
+            self.session.add(ua)
         for link in ad_links:
             self.session.add(link)
 

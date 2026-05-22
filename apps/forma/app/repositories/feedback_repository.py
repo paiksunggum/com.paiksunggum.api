@@ -14,6 +14,16 @@ class FeedbackRepository:
         await self.session.refresh(row)
         return row
 
-    async def list_all(self) -> list[Feedback]:
-        r = await self.session.execute(select(Feedback).order_by(Feedback.id.desc()))
-        return list(r.scalars().all())
+    async def list_by_video_id(self, video_id: int) -> list[Feedback]:
+        result = await self.session.execute(
+            select(Feedback)
+            .where(Feedback.video_id == video_id)
+            .order_by(Feedback.id.desc())
+        )
+        return list(result.scalars().all())
+
+    async def get_by_id(self, feedback_id: int) -> Feedback | None:
+        result = await self.session.execute(
+            select(Feedback).where(Feedback.id == feedback_id)
+        )
+        return result.scalar_one_or_none()

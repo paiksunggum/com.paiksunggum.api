@@ -1,12 +1,12 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
-class AdLinkCreateRequest(BaseModel):
-    video_id: int
+class AdExposureCreateRequest(BaseModel):
     ad_id: int
-    placement_type: str = Field(default="description", max_length=30)
-    start_sec: int | None = Field(default=None, ge=0)
-    end_sec: int | None = Field(default=None, ge=0)
+    placement_type: str = Field(default="overlay", max_length=30)
+    exposed_at: datetime | None = None
 
 
 class AdLinkResponse(BaseModel):
@@ -14,7 +14,7 @@ class AdLinkResponse(BaseModel):
     video_id: int
     ad_id: int
     placement_type: str
-    start_sec: int | None
-    end_sec: int | None
+    exposed_at: datetime
+    created_at: datetime
 
     model_config = {"from_attributes": True}

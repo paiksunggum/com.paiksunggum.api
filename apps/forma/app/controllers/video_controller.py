@@ -11,5 +11,5 @@ class VideoController:
     async def create_video(self, req: VideoCreateRequest):
         return await self.service.create_video(req)
 
-    async def list_videos(self):
-        return await self.service.list_videos()
+    async def list_videos_by_user(self, user_id: int):
+        return await self.service.list_videos_by_user(user_id)
