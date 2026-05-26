@@ -1,17 +1,22 @@
-"""로컬 개발 서버 — 사용자가 backend 폴더에서 직접 실행할 때만 사용.
+"""Local dev server.
 
+Usage (from backend/):
     conda activate venv
     python run.py
-
-에이전트/스크립트가 자동으로 띄우지 않는다. 종료: 터미널에서 Ctrl+C.
 """
+
+import os
 
 import uvicorn
 
 if __name__ == "__main__":
+    os.environ["ENABLE_API_DOCS"] = "1"
+    # reload_dirs limits file watching (StatReload on Windows + OneDrive can hang).
+    # watchfiles (requirements) switches reload to WatchFilesReload instead of StatReload.
     uvicorn.run(
         "apps.main:app",
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=8000,
         reload=True,
+        reload_dirs=["apps"],
     )

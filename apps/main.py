@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -46,7 +47,14 @@ from .weather.app.schemas import WeatherResponse
 from .weather.app.weather_controller import WeatherController
 
 
-app = FastAPI(title="TJ Watson Main Page")
+_docs_enabled = os.getenv("ENABLE_API_DOCS", "").lower() in ("1", "true", "yes")
+
+app = FastAPI(
+    title="TJ Watson Main Page",
+    docs_url="/docs" if _docs_enabled else None,
+    redoc_url="/redoc" if _docs_enabled else None,
+    openapi_url="/openapi.json" if _docs_enabled else None,
+)
 
 app.include_router(forma_router)
 
@@ -208,4 +216,10 @@ async def secom_register_user(
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("apps.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(
+        "apps.main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+        reload_dirs=["apps"],
+    )
