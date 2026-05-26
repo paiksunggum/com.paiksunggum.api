@@ -12,7 +12,7 @@ class FeedbackNestedCreateRequest(BaseModel):
 
 class FeedbackResponse(BaseModel):
     id: int
-    video_id: int
+    video_id: int | None
     frame_id: int | None
     source_type: str
     comment: str

@@ -2,6 +2,7 @@ import io
 import logging
 import os
 import secrets
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
@@ -10,8 +11,9 @@ import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.secom.app.models.user import User
 from apps.secom.app.security import hash_password
+
+from ..models.users_model import User
 
 from ..models.ad_link_model import AdLink
 from ..models.ads_model import Ad
@@ -102,7 +104,7 @@ class FormaSeedService:
             password_hash=hash_password(secrets.token_urlsafe(32)),
             email="forma_csv_demo@example.invalid",
             name="CSV Demo User",
-            birthdate="00000000",
+            birthdate=date(1970, 1, 1),
             gender="none",
             role="user",
         )

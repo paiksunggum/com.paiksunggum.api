@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, SQLModel
 
 from .model_utils import now_utc
@@ -7,6 +8,9 @@ from .model_utils import now_utc
 
 class AdStatsDaily(SQLModel, table=True):
     __tablename__ = "ad_stats_daily"
+    __table_args__ = (
+        UniqueConstraint("ad_id", "stat_date", name="uq_ad_stats_daily_ad_date"),
+    )
 
     id: int | None = Field(
         default=None,

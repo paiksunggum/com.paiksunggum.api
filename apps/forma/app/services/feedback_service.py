@@ -12,13 +12,22 @@ class FeedbackService:
     async def create_for_video(
         self, video_id: int, req: FeedbackNestedCreateRequest
     ) -> Feedback:
-        row = Feedback(
-            video_id=video_id,
-            frame_id=req.frame_id,
-            source_type=req.source_type,
-            comment=req.comment,
-            score=req.score,
-        )
+        if req.frame_id is not None:
+            row = Feedback(
+                video_id=None,
+                frame_id=req.frame_id,
+                source_type=req.source_type,
+                comment=req.comment,
+                score=req.score,
+            )
+        else:
+            row = Feedback(
+                video_id=video_id,
+                frame_id=None,
+                source_type=req.source_type,
+                comment=req.comment,
+                score=req.score,
+            )
         return await self.feedback_repository.create(row)
 
     async def list_by_video(self, video_id: int) -> list[Feedback]:
