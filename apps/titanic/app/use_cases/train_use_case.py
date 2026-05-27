@@ -1,5 +1,6 @@
 from ..models.rose_model import RoseModel
-from ..repositories.walter_reader import WalterReader
+
+from .walter_reader import WalterReader
 
 
 class JackService:

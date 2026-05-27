@@ -42,7 +42,12 @@ from .chat.app.chloe_controller import ChloeController
 from .chat.app.schemas import ChatRequest, ChatResponse
 from .database import create_tables, get_db, neon_now
 from .forma.app.forma_routes import router as forma_router
-from .titanic.app.controllers.james_controller import JamesController
+from .titanic.adapter.inbound.api.v1.titanic_command_router import (
+    router as titanic_command_router,
+)
+from .titanic.adapter.inbound.api.v1.titanic_query_router import (
+    router as titanic_query_router,
+)
 from .weather.app.schemas import WeatherResponse
 from .weather.app.weather_controller import WeatherController
 
@@ -57,6 +62,8 @@ app = FastAPI(
 )
 
 app.include_router(forma_router)
+app.include_router(titanic_query_router)
+app.include_router(titanic_command_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -83,36 +90,6 @@ def read_root():
 @app.get("/db-check")
 async def check_db(db: AsyncSession = Depends(get_db)):
     return await neon_now(db)
-
-
-@app.get("/titanic/data")
-def read_titanic_data():
-    james = JamesController()
-    df = james.get_data()
-
-    return df.to_dict(orient="records")
-
-
-@app.get("/titanic/count")
-def read_titanic_count():
-    james = JamesController()
-    count = james.get_count()
-
-    return {"count": count}
-
-
-@app.get("/titanic/tree")
-def read_titanic_tree():
-    james = JamesController()
-    tree = james.has_decision_tree_model()
-
-    return {"tree": tree}
-
-
-@app.get("/titanic/model")
-def read_titanic_model():
-    controller = JamesController()
-    return controller.get_model_name_and_accuracy()
 
 
 @app.get("/weather/current", response_model=WeatherResponse)

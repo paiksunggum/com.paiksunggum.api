@@ -3,7 +3,6 @@ import logging
 from collections.abc import AsyncGenerator
 from pathlib import Path
 
-from dotenv import find_dotenv, load_dotenv
 from fastapi import HTTPException
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
@@ -14,8 +13,6 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import DeclarativeBase
 
 _backend_root = Path(__file__).resolve().parent.parent
-load_dotenv(_backend_root / ".env")
-load_dotenv(find_dotenv(usecwd=True), override=False)
 logger = logging.getLogger("apps.database")
 
 def normalize_async_database_url(url: str) -> str:
@@ -64,7 +61,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     if AsyncSessionLocal is None:
         raise HTTPException(
             status_code=503,
-            detail="DATABASE_URL is not set; add it to backend/.env",
+            detail="DATABASE_URL is not set; set it in the environment",
         )
     async with AsyncSessionLocal() as session:
         yield session

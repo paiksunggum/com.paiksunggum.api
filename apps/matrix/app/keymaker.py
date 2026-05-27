@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 
 import google.generativeai as genai
-from dotenv import find_dotenv, load_dotenv
 
 _keymaker_singleton: Keymaker | None = None
 
@@ -14,14 +12,10 @@ _keymaker_singleton: Keymaker | None = None
 class Keymaker:
     """
     앱 전체에서 쓰는 API 자격 증명과, 그로부터 만든 클라이언트를 보관한다.
-    `backend/.env` 를 로드한 뒤 환경 변수를 읽는다.
+    환경 변수만 읽는다.
     """
 
     def __init__(self) -> None:
-        backend_root = Path(__file__).resolve().parents[3]
-        load_dotenv(backend_root / ".env")
-        load_dotenv(find_dotenv(usecwd=True), override=False)
-
         self.gemini_api_key: str = (os.getenv("GEMINI_API_KEY") or "").strip()
         self.gemini_model: str = (
             (os.getenv("GEMINI_MODEL") or "gemini-2.5-flash").strip()
@@ -43,7 +37,7 @@ class Keymaker:
     def require_gemini(self) -> genai.GenerativeModel:
         if self._gemini is None:
             raise ValueError(
-                "GEMINI_API_KEY가 설정되어 있지 않습니다. backend/.env 에 추가하세요."
+                "GEMINI_API_KEY가 설정되어 있지 않습니다. 환경 변수로 설정하세요."
             )
         return self._gemini
 

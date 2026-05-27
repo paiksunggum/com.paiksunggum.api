@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class CaledonValidation:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
 

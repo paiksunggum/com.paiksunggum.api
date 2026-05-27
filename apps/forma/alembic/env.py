@@ -4,15 +4,11 @@ from logging.config import fileConfig
 from pathlib import Path
 
 from alembic import context
-from dotenv import find_dotenv, load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 _backend_root = Path(__file__).resolve().parents[3]
 if str(_backend_root) not in sys.path:
     sys.path.insert(0, str(_backend_root))
-
-load_dotenv(_backend_root / ".env")
-load_dotenv(find_dotenv(usecwd=True), override=False)
 
 config = context.config
 

@@ -1,10 +1,5 @@
 """Drop all tables in public schema (CASCADE)."""
 import os
-from pathlib import Path
-
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 url = (os.getenv("DATABASE_URL") or "").replace("postgresql+psycopg://", "postgresql://")
 if not url:
     raise SystemExit("DATABASE_URL not set")

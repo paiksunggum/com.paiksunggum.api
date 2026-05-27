@@ -13,16 +13,9 @@ from __future__ import annotations
 
 import asyncio
 import os
-from pathlib import Path
-
-from dotenv import find_dotenv, load_dotenv
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-
-_backend_root = Path(__file__).resolve().parent.parent
-load_dotenv(_backend_root / ".env")
-load_dotenv(find_dotenv(usecwd=True), override=False)
 
 
 def to_async_neon_url(url: str) -> str:
@@ -30,7 +23,7 @@ def to_async_neon_url(url: str) -> str:
     u = url.strip()
     if not u:
         raise SystemExit(
-            "DATABASE_URL 이 비어 있습니다. backend/.env 에 Neon 연결 문자열을 설정하세요."
+            "DATABASE_URL 이 비어 있습니다. 환경 변수로 Neon 연결 문자열을 설정하세요."
         )
     if "+psycopg_async" in u:
         return u

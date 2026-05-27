@@ -4,7 +4,6 @@ import os
 import secrets
 from datetime import date
 from decimal import Decimal
-from pathlib import Path
 
 import httpx
 import pandas as pd
@@ -24,8 +23,6 @@ from ..schemas.seed_schema import SeedDemoCsvResponse
 
 logger = logging.getLogger("apps.forma.seed")
 
-_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-_LOCAL_SAMPLE = _DATA_DIR / "country-list-sample.csv"
 _DEFAULT_REMOTE_CSV = (
     "https://raw.githubusercontent.com/datasets/country-list/master/data.csv"
 )
@@ -76,13 +73,8 @@ class FormaSeedService:
                 r.raise_for_status()
                 content = r.content
         except Exception as e:
-            logger.warning("원격 CSV 로드 실패, 로컬 표본 사용: %s", e)
-            if not _LOCAL_SAMPLE.is_file():
-                raise ValueError(
-                    "원격 CSV를 받지 못했고 로컬 표본 파일도 없습니다."
-                ) from e
-            content = _LOCAL_SAMPLE.read_bytes()
-            source_label = "local_fallback"
+            logger.warning("원격 CSV 로드 실패: %s", e)
+            raise ValueError("원격 CSV를 받지 못했습니다.") from e
 
         df = pd.read_csv(io.BytesIO(content))
         name_col, code_col = _name_code_columns(df)

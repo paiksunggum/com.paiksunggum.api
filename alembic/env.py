@@ -3,14 +3,12 @@ import sys
 from logging.config import fileConfig
 from pathlib import Path
 
-from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
 _backend_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_backend_root))
-load_dotenv(_backend_root / ".env")
 
 from apps.database import normalize_async_database_url  # noqa: E402
 from apps.secom.app.models.user import User  # noqa: E402, F401
