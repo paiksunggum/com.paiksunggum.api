@@ -2,7 +2,7 @@ import secrets
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.secom.app.security import hash_password
+from apps.friday13th.app.security import hash_password
 
 from ..models.users_model import User
 from ..repositories.users_repository import UsersRepository
