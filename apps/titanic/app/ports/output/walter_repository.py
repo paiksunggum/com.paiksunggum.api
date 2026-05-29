@@ -1,4 +1,5 @@
-from typing import Protocol, TypedDict
+from abc import ABC, abstractmethod
+from typing import TypedDict
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,10 +22,9 @@ class WalterPassengerPage(TypedDict):
     items: list[WalterPassengerItem]
 
 
-class WalterRepository(Protocol):
-    async def read_passengers(
-        self,
-        *,
+class WalterRepository(ABC):
+    @abstractmethod
+    async def get_passengers(
         page: int,
         page_size: int,
         db: AsyncSession,

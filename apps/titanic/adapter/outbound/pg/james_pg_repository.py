@@ -76,42 +76,36 @@ def _domain_to_model(passenger: TitanicPassenger) -> TitanicPassengerModel:
 class JamesPgRepository(JamesRepository):
     """James 출력 포트 → Neon(PostgreSQL) 어댑터."""
 
-    async def save_uploaded_passengers(
+    async def upload_passengers(
         self,
-        *,
-        file_name: str,
-        columns: list[str],
-        rows: list[dict[str, str]],
+        records: list[dict[str, Any]],
     ) -> dict[str, Any]:
         if engine is None or AsyncSessionLocal is None:
             raise RuntimeError("DATABASE_URL is not set")
 
         logger.info(
-            "[JamesPgRepository] persist start - file=%s, rows=%d",
-            file_name,
-            len(rows),
+            "[DB저장소] PostgreSQL 저장 시작 | 승객 %d행",
+            len(records),
         )
-        saved_rows: list[dict[str, str]] = []
+        saved_rows: list[dict[str, Any]] = []
 
         async with AsyncSessionLocal() as session:
             async with session.begin():
-                for source_row in rows:
-                    domain_passenger = _row_to_domain(source_row)
+                for source_row in records:
+                    row = {str(k): str(v) if v is not None else "" for k, v in source_row.items()}
+                    domain_passenger = _row_to_domain(row)
                     session.add(_domain_to_model(domain_passenger))
                     saved_rows.append(source_row)
 
         logger.info(
-            "[JamesPgRepository] persist done - file=%s, inserted=%d, table=%s",
-            file_name,
+            "[DB저장소] PostgreSQL 저장 완료 | 삽입 %d행, 테이블=%s",
             len(saved_rows),
             TitanicPassengerModel.__tablename__,
         )
 
         return {
             "ok": True,
-            "fileName": file_name,
             "rowCount": len(saved_rows),
-            "columns": columns,
             "data": saved_rows,
             "storedIn": "neon",
         }

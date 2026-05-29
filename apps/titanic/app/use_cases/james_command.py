@@ -1,39 +1,25 @@
-from typing import Any
 import logging
+from typing import Any
 
+from ..ports.input.james_command_use_case import JamesCommandUseCase
 from ..ports.output.james_repository import JamesRepository
 
 logger = logging.getLogger("apps")
 
 
-class JamesCommand:
-    """입력 포트에서 전달받은 업로드 데이터를 출력 포트(리포지토리)로 전달한다."""
+class JamesCommand(JamesCommandUseCase):
+    """라우터에서 받은 승객 레코드를 출력 포트(리포지토리)로 전달한다."""
 
     def __init__(self, repository: JamesRepository) -> None:
         self._repository = repository
 
     async def upload_passengers(
         self,
-        *,
-        file_name: str,
-        columns: list[str],
-        rows: list[dict[str, str]],
+        records: list[dict[str, Any]],
     ) -> dict[str, Any]:
         logger.info(
-            "[JamesCommand] call repository - file=%s, repository=%s, rows=%d",
-            file_name,
+            "[유스케이스→저장소] JamesCommand → %s | 승객 %d행 전달",
             type(self._repository).__name__,
-            len(rows),
+            len(records),
         )
-        result = await self._repository.save_uploaded_passengers(
-            file_name=file_name,
-            columns=columns,
-            rows=rows,
-        )
-        logger.info(
-            "[JamesCommand] repository returned - file=%s, stored_in=%s, rows=%s",
-            file_name,
-            result.get("storedIn"),
-            result.get("rowCount"),
-        )
-        return result
+        return await self._repository.upload_passengers(records)

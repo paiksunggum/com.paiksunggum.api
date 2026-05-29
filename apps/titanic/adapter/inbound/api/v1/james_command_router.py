@@ -6,12 +6,9 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from database import engine
 
-from .....app.ports.input.james_command_use_case import (
-    JamesCommandUseCase,
-    JamesCommandUseCaseImpl,
-)
-from .....app.ports.output.james_repository import InMemoryJamesRepository
+from .....app.ports.input.james_command_use_case import JamesCommandUseCase
 from .....app.use_cases.james_command import JamesCommand
+from ....outbound.james_in_memory_repository import InMemoryJamesRepository
 from ....outbound.pg.james_pg_repository import JamesPgRepository
 
 james_router = APIRouter(prefix="/titanic/james", tags=["james"])
@@ -27,7 +24,7 @@ def get_james_repository():
 def get_james_command_use_case(
     repository=Depends(get_james_repository),
 ) -> JamesCommandUseCase:
-    return JamesCommandUseCaseImpl(JamesCommand(repository))
+    return JamesCommand(repository)
 
 
 def _decode_csv_bytes(raw: bytes) -> str:
@@ -68,33 +65,26 @@ async def upload_titanic_csv(
 
     normalized_columns = [_normalize_header(name) for name in reader.fieldnames]
 
-    rows = []
+    records = []
     for source_row in reader:
         normalized_row = {}
         for original_key, value in source_row.items():
             if original_key is None:
                 continue
             normalized_row[_normalize_header(original_key)] = value
-        rows.append(normalized_row)
+        records.append(normalized_row)
     logger.info(
-        "[JamesRouter] upload accepted - file=%s, rows=%d",
+        "[라우터→유스케이스] CSV 업로드 요청 수신 | 파일=%s, 승객 %d행",
         file.filename,
-        len(rows),
+        len(records),
     )
 
     try:
-        result = await use_case.upload_passengers(
-            file_name=file.filename,
-            columns=normalized_columns,
-            rows=rows,
-        )
-        logger.info(
-            "[JamesRouter] upload completed - file=%s, stored_in=%s, rows=%d",
-            file.filename,
-            result.get("storedIn"),
-            result.get("rowCount", 0),
-        )
-        return result
+        return {
+            **await use_case.upload_passengers(records),
+            "fileName": file.filename,
+            "columns": normalized_columns,
+        }
     except RuntimeError as e:
-        logger.exception("[JamesRouter] upload failed - file=%s", file.filename)
+        logger.exception("[라우터] CSV 업로드 실패 | 파일=%s", file.filename)
         raise HTTPException(status_code=503, detail=str(e)) from e

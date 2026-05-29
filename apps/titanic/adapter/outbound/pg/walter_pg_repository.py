@@ -3,14 +3,14 @@ import logging
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ....app.ports.output.walter_repository import WalterPassengerPage
+from ....app.ports.output.walter_repository import WalterPassengerPage, WalterRepository
 from .james_pg_repository import TitanicPassengerModel
 
 logger = logging.getLogger("apps")
 
 
-class WalterPgRepository:
-    async def read_passengers(
+class WalterPgRepository(WalterRepository):
+    async def get_passengers(
         self,
         *,
         page: int,
@@ -18,7 +18,7 @@ class WalterPgRepository:
         db: AsyncSession,
     ) -> WalterPassengerPage:
         logger.info(
-            "[WalterPgRepository] query start - table=%s, page=%d, page_size=%d",
+            "[DB저장소] PostgreSQL 조회 시작 | 테이블=%s, page=%d, page_size=%d",
             TitanicPassengerModel.__tablename__,
             page,
             page_size,
@@ -40,7 +40,7 @@ class WalterPgRepository:
         result = await db.execute(stmt)
         passengers = result.scalars().all()
         logger.info(
-            "[WalterPgRepository] query done - total=%d, returned=%d",
+            "[DB저장소] PostgreSQL 조회 완료 | 전체 %d건, 반환 %d건",
             total,
             len(passengers),
         )

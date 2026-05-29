@@ -45,8 +45,8 @@ from .forma.app.forma_routes import router as forma_router
 from .titanic.adapter.inbound.api.v1.james_command_router import (
     james_router as titanic_command_router,
 )
-from .titanic.adapter.inbound.api.v1.titanic_query_router import (
-    router as titanic_query_router,
+from .titanic.adapter.inbound.api.v1.walter_query_router import (
+    walter_router as titanic_query_router,
 )
 from .weather.app.schemas import WeatherResponse
 from .weather.app.weather_controller import WeatherController
@@ -59,6 +59,7 @@ app = FastAPI(
     docs_url="/docs" if _docs_enabled else None,
     redoc_url="/redoc" if _docs_enabled else None,
     openapi_url="/openapi.json" if _docs_enabled else None,
+    swagger_ui_parameters={"operationsSorter": "method"},
 )
 
 app.include_router(forma_router)
