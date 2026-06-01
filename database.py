@@ -68,8 +68,8 @@ async def create_tables() -> None:
     if engine is None:
         return
 
-    from apps.friday13th.app.models.user import User  # noqa: F401
-    from apps.titanic.adapter.outbound.pg.james_pg_repository import (  # noqa: F401
+    from apps.forma.app.models.users_model import User  # noqa: F401
+    from apps.titanic.adapter.outbound.pg.walter_pg_repository import (  # noqa: F401
         TitanicPassengerModel,
     )
     from sqlmodel import SQLModel

@@ -1,5 +1,3 @@
-import secrets
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.friday13th.app.security import hash_password
@@ -20,11 +18,11 @@ class UsersService:
 
         user = User(
             login_id=req.login_id,
-            password_hash=hash_password(secrets.token_urlsafe(32)),
+            password_hash=hash_password(req.password),
             email=req.email,
             name=req.name,
-            birthdate=req.birthdate,
-            gender="none",
+            birthdate=str(req.birthdate),
+            gender=req.gender,
             role=req.role,
         )
         return await self.users_repository.create(user)

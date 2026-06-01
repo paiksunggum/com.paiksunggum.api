@@ -3,7 +3,6 @@ import os
 import sys
 
 from fastapi import Depends, FastAPI, HTTPException
-from sqlalchemy.exc import OperationalError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,35 +21,22 @@ def _configure_app_logging() -> None:
 
 _configure_app_logging()
 
-from .matrix.app.keymaker import get_keymaker
+from apps.matrix.app.keymaker import get_keymaker
 
 keymaker = get_keymaker()
 
-from .agora.app.schemas import SignupRequest, SignupResponse
-from .friday13th.app.controllers.user_controller import UserController
-from .friday13th.app.models.role import UserRole
-from .friday13th.app.schemas import (
-    InitDbResponse,
-    UserLoginResponse,
-    UserRegisterRequest,
-    UserResponse,
-)
-from .friday13th.app.schemas.user_schema import UserLoginSchema, UserSchema
-from .chat.app.chat_page import chat_page_html
-from .home_page import home_page_html
-from .chat.app.chloe_controller import ChloeController
-from .chat.app.schemas import ChatRequest, ChatResponse
-from .database import create_tables, get_db, neon_now
-from .forma.app.forma_routes import router as forma_router
-from .titanic.adapter.inbound.api.v1.james_command_router import (
-    james_router as titanic_command_router,
-)
-from .titanic.adapter.inbound.api.v1.walter_query_router import (
-    walter_router as titanic_query_router,
-)
-from .weather.app.schemas import WeatherResponse
-from .weather.app.weather_controller import WeatherController
-
+from apps.chat.app.chat_page import chat_page_html
+from apps.chat.app.chloe_controller import ChloeController
+from apps.chat.app.schemas import ChatRequest, ChatResponse
+from apps.database import create_tables, get_db, neon_now
+from apps.forma.app.forma_routes import router as forma_router
+from apps.friday13th.adapter.inbound.api.schemas import InitDbResponse
+from apps.friday13th.adapter.inbound.api.v1.login_router import login_router
+from apps.friday13th.adapter.inbound.api.v1.signup_router import signup_router
+from apps.home_page import home_page_html
+from apps.titanic.adapter.inbound.api import titanic_router
+from apps.weather.app.schemas import WeatherResponse
+from apps.weather.app.weather_controller import WeatherController
 
 _docs_enabled = os.getenv("ENABLE_API_DOCS", "").lower() in ("1", "true", "yes")
 
@@ -63,8 +49,9 @@ app = FastAPI(
 )
 
 app.include_router(forma_router)
-app.include_router(titanic_query_router)
-app.include_router(titanic_command_router)
+app.include_router(titanic_router)
+app.include_router(login_router)
+app.include_router(signup_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -132,63 +119,14 @@ def chat(req: ChatRequest):
         ) from e
 
 
-# 회원가입
-@app.post("/signup", response_model=SignupResponse)
-async def signup(req: SignupRequest, db: AsyncSession = Depends(get_db)):
-    controller = UserController(db)
-    try:
-        await controller.save_user(
-            UserSchema(
-                user_id=req.userId,
-                password=req.password,
-                email=req.email or f"{req.userId}@naver.com",
-                name=req.name,
-                birthdate=req.birthdate,
-                gender=req.gender,
-                role=UserRole.USER,
-            )
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=409, detail=str(e)) from e
-    except OperationalError as e:
-        raise HTTPException(
-            status_code=503,
-            detail="데이터베이스 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        ) from e
-    return SignupResponse(message="회원가입이 완료되었습니다.")
-
-
-@app.post("/login", response_model=UserLoginResponse)
-async def login(req: UserLoginSchema, db: AsyncSession = Depends(get_db)):
-    try:
-        await UserController(db).login_user(req)
-    except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e)) from e
-    except OperationalError as e:
-        raise HTTPException(
-            status_code=503,
-            detail="데이터베이스 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        ) from e
-    return UserLoginResponse(message="로그인에 성공했습니다.")
-
-
 @app.post("/secom/db/init", response_model=InitDbResponse)
-async def secom_init_db(db: AsyncSession = Depends(get_db)):
-    try:
-        return await UserController(db).init_db()
-    except ValueError as e:
-        raise HTTPException(status_code=503, detail=str(e)) from e
-
-
-@app.post("/secom/users/register", response_model=UserResponse)
-async def secom_register_user(
-    req: UserRegisterRequest,
-    db: AsyncSession = Depends(get_db),
-):
-    try:
-        return await UserController(db).register(req)
-    except ValueError as e:
-        raise HTTPException(status_code=409, detail=str(e)) from e
+async def secom_init_db():
+    await create_tables()
+    return InitDbResponse(
+        ok=True,
+        message="users 테이블을 준비했습니다.",
+        seeded=[],
+    )
 
 
 if __name__ == "__main__":

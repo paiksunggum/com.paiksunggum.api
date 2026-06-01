@@ -1,12 +1,78 @@
 import logging
+from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import Field, SQLModel
 
+from ....app.ports.output.james_repository import JamesRepository
 from ....app.ports.output.walter_repository import WalterPassengerPage, WalterRepository
-from .james_pg_repository import TitanicPassengerModel
 
 logger = logging.getLogger("apps")
+
+
+class TitanicPassengerModel(SQLModel, table=True):
+    __tablename__ = "titanic_passengers"
+
+    id: int | None = Field(default=None, primary_key=True)
+    passenger_id: str = Field(default="", index=True)
+    survived: str = ""
+    pclass: str = ""
+    name: str = ""
+    gender: str = ""
+    age: str = ""
+    sibsp: str = ""
+    parch: str = ""
+    ticket: str = ""
+    fare: str = ""
+    cabin: str = ""
+    embarked: str = ""
+
+
+def _cell(row: dict[str, Any], *keys: str) -> str:
+    for key in keys:
+        if key in row and row[key] is not None:
+            return str(row[key])
+    return ""
+
+
+class JamesPgRepository(JamesRepository):
+    def __init__(self, db: AsyncSession) -> None:
+        self._db = db
+
+    async def upload_passengers(
+        self,
+        records: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        logger.info(
+            "[DB저장소] PostgreSQL 업로드 시작 | 테이블=%s, %d행",
+            TitanicPassengerModel.__tablename__,
+            len(records),
+        )
+        await self._db.execute(delete(TitanicPassengerModel))
+        for row in records:
+            self._db.add(
+                TitanicPassengerModel(
+                    passenger_id=_cell(row, "PassengerId", "passenger_id"),
+                    survived=_cell(row, "Survived", "survived"),
+                    pclass=_cell(row, "Pclass", "pclass"),
+                    name=_cell(row, "Name", "name"),
+                    gender=_cell(row, "gender", "Sex"),
+                    age=_cell(row, "Age", "age"),
+                    sibsp=_cell(row, "SibSp", "sibsp"),
+                    parch=_cell(row, "Parch", "parch"),
+                    ticket=_cell(row, "Ticket", "ticket"),
+                    fare=_cell(row, "Fare", "fare"),
+                    cabin=_cell(row, "Cabin", "cabin"),
+                    embarked=_cell(row, "Embarked", "embarked"),
+                )
+            )
+        await self._db.commit()
+        logger.info(
+            "[DB저장소] PostgreSQL 업로드 완료 | %d행",
+            len(records),
+        )
+        return {"inserted": len(records)}
 
 
 class WalterPgRepository(WalterRepository):

@@ -1,7 +1,7 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...database import get_db
@@ -97,6 +97,18 @@ async def forma_create_user(
         return FormaUserResponse.model_validate(user)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e)) from e
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="이미 사용 중인 아이디입니다.") from e
+    except OperationalError as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=503,
+            detail="데이터베이스 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ) from e
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e.orig or e)) from e
 
 
 # --- Sports master ---

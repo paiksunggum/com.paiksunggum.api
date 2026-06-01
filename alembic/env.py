@@ -11,7 +11,7 @@ _backend_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_backend_root))
 
 from apps.database import normalize_async_database_url  # noqa: E402
-from apps.friday13th.app.models.user import User  # noqa: E402, F401
+from apps.forma.app.models.users_model import User  # noqa: E402, F401
 from sqlmodel import SQLModel  # noqa: E402
 
 config = context.config

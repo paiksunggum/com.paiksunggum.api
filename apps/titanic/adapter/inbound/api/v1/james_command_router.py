@@ -3,28 +3,17 @@ from io import StringIO
 import logging
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-
-from database import engine
+from pydantic import ValidationError
 
 from .....app.ports.input.james_command_use_case import JamesCommandUseCase
-from .....app.use_cases.james_command import JamesCommand
-from ....outbound.james_in_memory_repository import InMemoryJamesRepository
-from ....outbound.pg.james_pg_repository import JamesPgRepository
+from .. import get_james_command_use_case
+from ..schemas.james_command_schema import (
+    JamesCommandFileUploadResponse,
+    JamesCommandSchema,
+)
 
 james_router = APIRouter(prefix="/titanic/james", tags=["james"])
 logger = logging.getLogger("apps")
-
-
-def get_james_repository():
-    if engine is not None:
-        return JamesPgRepository()
-    return InMemoryJamesRepository()
-
-
-def get_james_command_use_case(
-    repository=Depends(get_james_repository),
-) -> JamesCommandUseCase:
-    return JamesCommand(repository)
 
 
 def _decode_csv_bytes(raw: bytes) -> str:
@@ -43,11 +32,11 @@ def _normalize_header(header: str) -> str:
     return header.strip()
 
 
-@james_router.post("/fileupload")
+@james_router.post("/fileupload", response_model=JamesCommandFileUploadResponse)
 async def upload_titanic_csv(
     file: UploadFile = File(...),
     use_case: JamesCommandUseCase = Depends(get_james_command_use_case),
-):
+) -> JamesCommandFileUploadResponse:
     if not file.filename:
         raise HTTPException(status_code=400, detail="파일 이름이 없습니다.")
     if not file.filename.lower().endswith(".csv"):
@@ -65,26 +54,44 @@ async def upload_titanic_csv(
 
     normalized_columns = [_normalize_header(name) for name in reader.fieldnames]
 
-    records = []
-    for source_row in reader:
-        normalized_row = {}
+    passengers: list[JamesCommandSchema] = []
+    for row_num, source_row in enumerate(reader, start=2):
+        normalized_row: dict[str, str] = {}
         for original_key, value in source_row.items():
             if original_key is None:
                 continue
-            normalized_row[_normalize_header(original_key)] = value
-        records.append(normalized_row)
+            normalized_row[_normalize_header(original_key)] = value or ""
+        try:
+            passengers.append(JamesCommandSchema.model_validate(normalized_row))
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"CSV {row_num}행 형식 오류: {e.errors()[0]['msg']}",
+            ) from e
+
+    records = [row.model_dump() for row in passengers]
+
+    # 레코드 목록의 상위 5줄만 출력 (실제 서비스에서는 제거)
+    print("라우터에 업로드된 레코드 예시:")
+    for record in records[:5]:
+        print(record)
+
     logger.info(
         "[라우터→유스케이스] CSV 업로드 요청 수신 | 파일=%s, 승객 %d행",
         file.filename,
-        len(records),
+        len(passengers),
     )
 
     try:
-        return {
-            **await use_case.upload_passengers(records),
-            "fileName": file.filename,
-            "columns": normalized_columns,
-        }
+        # 데이터베이스에 저장
+        result = await use_case.upload_passengers(records)
+        inserted = int(result["inserted"])
+        return JamesCommandFileUploadResponse(
+            inserted=inserted,
+            fileName=file.filename,
+            columns=normalized_columns,
+            dataRowCount=inserted,
+        )
     except RuntimeError as e:
         logger.exception("[라우터] CSV 업로드 실패 | 파일=%s", file.filename)
         raise HTTPException(status_code=503, detail=str(e)) from e
