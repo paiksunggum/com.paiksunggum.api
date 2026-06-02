@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from database import AsyncSessionLocal, Base, engine
 
+from ....app.dtos.james_command_dto import BookingCommand, PersonCommand
 from ....app.ports.output.james_repository import JamesRepository
 from ....domain.entities.titanic import TitanicPassenger
 
@@ -82,11 +83,32 @@ class JamesPgRepository(JamesRepository):
     ) -> dict[str, Any]:
         if engine is None or AsyncSessionLocal is None:
             raise RuntimeError("DATABASE_URL is not set")
+        print("[제임스 PG 레포지토리] PersonCommand 상위 5개 레코드:")
+        for row in records[:5]:
+            print(
+                {
+                    "passenger_id": row.get("PassengerId") or row.get("passenger_id", ""),
+                    "name": row.get("Name") or row.get("name", ""),
+                    "gender": row.get("Sex") or row.get("gender", ""),
+                    "age": row.get("Age") or row.get("age", ""),
+                    "sib_sp": row.get("SibSp") or row.get("sib_sp") or row.get("sibsp", ""),
+                    "parch": row.get("Parch") or row.get("parch", ""),
+                    "survived": row.get("Survived") or row.get("survived", ""),
+                }
+            )
 
-        logger.info(
-            "[DB저장소] PostgreSQL 저장 시작 | 승객 %d행",
-            len(records),
-        )
+        print("[제임스 PG 레포지토리] BookingCommand 상위 5개 레코드:")
+        for row in records[:5]:
+            print(
+                {
+                    "pclass": row.get("Pclass") or row.get("pclass", ""),
+                    "ticket": row.get("Ticket") or row.get("ticket", ""),
+                    "fare": row.get("Fare") or row.get("fare", ""),
+                    "cabin": row.get("Cabin") or row.get("cabin", ""),
+                    "embarked": row.get("Embarked") or row.get("embarked", ""),
+                }
+            )
+
         saved_rows: list[dict[str, Any]] = []
 
         async with AsyncSessionLocal() as session:
@@ -97,14 +119,9 @@ class JamesPgRepository(JamesRepository):
                     session.add(_domain_to_model(domain_passenger))
                     saved_rows.append(source_row)
 
-        logger.info(
-            "[DB저장소] PostgreSQL 저장 완료 | 삽입 %d행, 테이블=%s",
-            len(saved_rows),
-            TitanicPassengerModel.__tablename__,
-        )
-
         return {
             "ok": True,
+            "inserted": len(saved_rows),
             "rowCount": len(saved_rows),
             "data": saved_rows,
             "storedIn": "neon",

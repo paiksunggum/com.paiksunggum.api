@@ -11,10 +11,10 @@ from apps.titanic.app.ports.input.james_command_use_case import JamesCommandUseC
 def get_james_command_use_case(
     db: AsyncSession = Depends(get_db),
 ) -> JamesCommandUseCase:
-    from apps.titanic.adapter.outbound.pg.walter_pg_repository import JamesPgRepository
+    from apps.titanic.adapter.outbound.pg.james_pg_repository import JamesPgRepository
     from apps.titanic.app.use_cases.james_command_interactor import JamesCommandInteractor
 
-    return JamesCommandInteractor(JamesPgRepository(db))
+    return JamesCommandInteractor(JamesPgRepository())
 
 
 from apps.titanic.adapter.inbound.api.v1.james_command_router import james_router

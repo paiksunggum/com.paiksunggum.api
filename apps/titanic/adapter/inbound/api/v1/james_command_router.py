@@ -69,23 +69,14 @@ async def upload_titanic_csv(
                 detail=f"CSV {row_num}행 형식 오류: {e.errors()[0]['msg']}",
             ) from e
 
-    records = [JamesCommandSchema.model_validate(passenger) for passenger in passengers]
-
-    # 레코드 목록의 상위 5줄만 출력 (실제 서비스에서는 제거)
-    logger.info(f"라우터에 업로드된 레코드 예시: {records[:5]}")
-    print("[제임스 라우터] 라우터에 업로드된 레코드 예시:")
-    for record in records[:5]:
-        print(record)
-
-    logger.info(
-        "[라우터→유스케이스] CSV 업로드 요청 수신 | 파일=%s, 승객 %d행",
-        file.filename,
-        len(passengers),
-    )
+    # 레코드 목록의 상위 5줄만 출력
+    print("[제임스 라우터] 라우터에 업로드된 CSV 파일에서 스키마로 옮겨진 상위 5개 레코드 예시:")
+    for record in passengers[:5]:
+        print(record.model_dump(by_alias=True))
 
     try:
         # 데이터베이스에 저장
-        result = await use_case.upload_passengers(records)
+        result = await use_case.upload_passengers(passengers)
         inserted = int(result["inserted"])
         return JamesCommandFileUploadResponse(
             inserted=inserted,

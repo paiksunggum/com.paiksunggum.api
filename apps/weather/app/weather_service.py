@@ -13,6 +13,14 @@ class WeatherService:
         lat: float | None = None,
         lon: float | None = None,
     ) -> WeatherResponse:
+        if not self.reader.api_key:
+            return WeatherResponse(
+                city=city or "Seoul",
+                temp_c=0,
+                description="날씨 API 미설정",
+                icon="01d",
+            )
+
         data = await self.reader.fetch_current(city=city, lat=lat, lon=lon)
         weather = data["weather"][0]
         return WeatherResponse(

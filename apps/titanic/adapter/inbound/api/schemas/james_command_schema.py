@@ -17,7 +17,7 @@ class JamesCommandSchema(BaseModel):
     name: str = Field(alias="Name")
     gender: str = Field(alias="Sex")
     age: str = Field(alias="Age")
-    sibsp: str = Field(alias="SibSp")
+    sib_sp: str = Field(alias="SibSp")
     parch: str = Field(alias="Parch")
     ticket: str = Field(alias="Ticket")
     fare: str = Field(alias="Fare")
