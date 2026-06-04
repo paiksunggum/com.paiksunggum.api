@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import httpx
 
-from ...matrix.app.keymaker import get_keymaker
+from core.matrix.keymaker_api import get_keymaker
 
 OPENWEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
 

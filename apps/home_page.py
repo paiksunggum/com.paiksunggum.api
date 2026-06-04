@@ -60,7 +60,7 @@ def home_page_html() -> str:
     </ul>
     <p style="margin-top:1.25rem;margin-bottom:0;font-size:0.8rem;">
       서버 실행: <code>backend</code> 폴더에서
-      <code>python run.py</code> 또는 <code>uvicorn apps.main:app --reload --host 0.0.0.0 --port 8000</code>
+      <code>python run.py</code> 또는 <code>uvicorn main:app --reload --host 0.0.0.0 --port 8000</code>
     </p>
   </main>
 </body>

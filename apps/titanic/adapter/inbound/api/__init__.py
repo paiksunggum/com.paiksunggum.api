@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database import get_db
+from core.matrix.oracle_database import get_db
 
 from apps.titanic.app.ports.input.james_command_use_case import JamesCommandUseCase
 
@@ -17,19 +17,19 @@ def get_james_command_use_case(
     return JamesCommandInteractor(JamesPgRepository())
 
 
+from apps.titanic.adapter.inbound.api.v1.andrew_blueprint_router import andrew_blueprint_router
 from apps.titanic.adapter.inbound.api.v1.james_command_router import james_router
 from apps.titanic.adapter.inbound.api.v1.rose_diamond_router import rose_diamond_router
-from apps.titanic.adapter.inbound.api.v1.walter_query_router import walter_router
 
 titanic_router = APIRouter()
 titanic_router.include_router(james_router)
 titanic_router.include_router(rose_diamond_router)
-titanic_router.include_router(walter_router)
+titanic_router.include_router(andrew_blueprint_router)
 
 __all__ = [
+    "andrew_blueprint_router",
     "get_james_command_use_case",
     "james_router",
     "rose_diamond_router",
     "titanic_router",
-    "walter_router",
 ]

@@ -1,6 +1,6 @@
 import google.generativeai as genai
 
-from ...matrix.app.keymaker import get_keymaker
+from core.matrix.keymaker_api import get_keymaker
 
 
 class IrisModel:

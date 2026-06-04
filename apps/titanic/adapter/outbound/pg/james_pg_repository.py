@@ -1,34 +1,16 @@
-from typing import Any
 import logging
+from typing import Any
 
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import delete
 
-from database import AsyncSessionLocal, Base, engine
+from core.matrix.oracle_database import AsyncSessionLocal, engine
 
 from ....app.dtos.james_command_dto import BookingCommand, PersonCommand
 from ....app.ports.output.james_repository import JamesRepository
-from ....domain.entities.titanic import TitanicPassenger
+from ..orm.booking_orm import BookingORM
+from ..orm.person_orm import PersonORM
 
 logger = logging.getLogger("apps")
-
-
-class TitanicPassengerModel(Base):
-    __tablename__ = "titanic_passengers"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    passenger_id: Mapped[str] = mapped_column(String(32), index=True)
-    survived: Mapped[str] = mapped_column(String(8))
-    pclass: Mapped[str] = mapped_column(String(8))
-    name: Mapped[str] = mapped_column(String(255))
-    gender: Mapped[str] = mapped_column(String(16))
-    age: Mapped[str] = mapped_column(String(16), default="")
-    sibsp: Mapped[str] = mapped_column(String(8), default="0")
-    parch: Mapped[str] = mapped_column(String(8), default="0")
-    ticket: Mapped[str] = mapped_column(String(64), default="")
-    fare: Mapped[str] = mapped_column(String(32), default="")
-    cabin: Mapped[str] = mapped_column(String(64), default="")
-    embarked: Mapped[str] = mapped_column(String(8), default="")
 
 
 def _get_cell(row: dict[str, str], *keys: str) -> str:
@@ -40,16 +22,21 @@ def _get_cell(row: dict[str, str], *keys: str) -> str:
     return ""
 
 
-def _row_to_domain(row: dict[str, str]) -> TitanicPassenger:
-    return TitanicPassenger(
+def _row_to_person_command(row: dict[str, str]) -> PersonCommand:
+    return PersonCommand(
         passenger_id=_get_cell(row, "PassengerId", "passenger_id"),
-        survived=_get_cell(row, "Survived", "survived"),
-        pclass=_get_cell(row, "Pclass", "pclass"),
         name=_get_cell(row, "Name", "name"),
         gender=_get_cell(row, "gender", "Sex", "sex"),
         age=_get_cell(row, "Age", "age"),
-        sibsp=_get_cell(row, "SibSp", "sibsp"),
+        sib_sp=_get_cell(row, "SibSp", "sib_sp", "sibsp"),
         parch=_get_cell(row, "Parch", "parch"),
+        survived=_get_cell(row, "Survived", "survived"),
+    )
+
+
+def _row_to_booking_command(row: dict[str, str]) -> BookingCommand:
+    return BookingCommand(
+        pclass=_get_cell(row, "Pclass", "pclass"),
         ticket=_get_cell(row, "Ticket", "ticket"),
         fare=_get_cell(row, "Fare", "fare"),
         cabin=_get_cell(row, "Cabin", "cabin"),
@@ -57,25 +44,8 @@ def _row_to_domain(row: dict[str, str]) -> TitanicPassenger:
     )
 
 
-def _domain_to_model(passenger: TitanicPassenger) -> TitanicPassengerModel:
-    return TitanicPassengerModel(
-        passenger_id=passenger.passenger_id,
-        survived=passenger.survived,
-        pclass=passenger.pclass,
-        name=passenger.name,
-        gender=passenger.gender,
-        age=passenger.age,
-        sibsp=passenger.sibsp,
-        parch=passenger.parch,
-        ticket=passenger.ticket,
-        fare=passenger.fare,
-        cabin=passenger.cabin,
-        embarked=passenger.embarked,
-    )
-
-
 class JamesPgRepository(JamesRepository):
-    """James 출력 포트 → Neon(PostgreSQL) 어댑터."""
+    """James 출력 포트 → Neon(PostgreSQL) person/booking 테이블."""
 
     async def upload_passengers(
         self,
@@ -83,41 +53,41 @@ class JamesPgRepository(JamesRepository):
     ) -> dict[str, Any]:
         if engine is None or AsyncSessionLocal is None:
             raise RuntimeError("DATABASE_URL is not set")
-        print("[제임스 PG 레포지토리] PersonCommand 상위 5개 레코드:")
-        for row in records[:5]:
-            print(
-                {
-                    "passenger_id": row.get("PassengerId") or row.get("passenger_id", ""),
-                    "name": row.get("Name") or row.get("name", ""),
-                    "gender": row.get("Sex") or row.get("gender", ""),
-                    "age": row.get("Age") or row.get("age", ""),
-                    "sib_sp": row.get("SibSp") or row.get("sib_sp") or row.get("sibsp", ""),
-                    "parch": row.get("Parch") or row.get("parch", ""),
-                    "survived": row.get("Survived") or row.get("survived", ""),
-                }
-            )
-
-        print("[제임스 PG 레포지토리] BookingCommand 상위 5개 레코드:")
-        for row in records[:5]:
-            print(
-                {
-                    "pclass": row.get("Pclass") or row.get("pclass", ""),
-                    "ticket": row.get("Ticket") or row.get("ticket", ""),
-                    "fare": row.get("Fare") or row.get("fare", ""),
-                    "cabin": row.get("Cabin") or row.get("cabin", ""),
-                    "embarked": row.get("Embarked") or row.get("embarked", ""),
-                }
-            )
 
         saved_rows: list[dict[str, Any]] = []
+        pending: list[tuple[PersonCommand, BookingCommand, dict[str, Any]]] = []
+
+        for source_row in records:
+            row = {
+                str(k): str(v) if v is not None else ""
+                for k, v in source_row.items()
+            }
+            person_cmd = _row_to_person_command(row)
+            if not person_cmd.passenger_id:
+                continue
+            pending.append(
+                (person_cmd, _row_to_booking_command(row), source_row),
+            )
 
         async with AsyncSessionLocal() as session:
             async with session.begin():
-                for source_row in records:
-                    row = {str(k): str(v) if v is not None else "" for k, v in source_row.items()}
-                    domain_passenger = _row_to_domain(row)
-                    session.add(_domain_to_model(domain_passenger))
+                await session.execute(delete(BookingORM))
+                await session.execute(delete(PersonORM))
+
+                for person_cmd, _, _ in pending:
+                    session.add(PersonORM.from_command(person_cmd))
+                await session.flush()
+
+                for person_cmd, booking_cmd, source_row in pending:
+                    session.add(
+                        BookingORM.from_command(person_cmd.passenger_id, booking_cmd),
+                    )
                     saved_rows.append(source_row)
+
+        logger.info(
+            "[제임스 pg 레포지터리] Neon 저장 완료 | persons/bookings 각 %d행",
+            len(saved_rows),
+        )
 
         return {
             "ok": True,

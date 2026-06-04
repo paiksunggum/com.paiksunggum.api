@@ -1,11 +1,20 @@
 import logging
 import os
 import sys
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from core.matrix.oracle_database import (
+    create_all_tables,
+    dispose_engine,
+    get_db,
+    init_engine,
+    neon_now,
+)
 
 
 def _configure_app_logging() -> None:
@@ -21,14 +30,13 @@ def _configure_app_logging() -> None:
 
 _configure_app_logging()
 
-from apps.matrix.app.keymaker import get_keymaker
+from core.matrix.keymaker_api import get_keymaker
 
 keymaker = get_keymaker()
 
 from apps.chat.app.chat_page import chat_page_html
 from apps.chat.app.chloe_controller import ChloeController
 from apps.chat.app.schemas import ChatRequest, ChatResponse
-from apps.database import create_tables, get_db, neon_now
 from apps.forma.app.forma_routes import router as forma_router
 from apps.friday13th.adapter.inbound.api.schemas import InitDbResponse
 from apps.friday13th.adapter.inbound.api.v1.login_router import login_router
@@ -40,8 +48,20 @@ from apps.weather.app.weather_controller import WeatherController
 
 _docs_enabled = os.getenv("ENABLE_API_DOCS", "").lower() in ("1", "true", "yes")
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    init_engine()
+    await create_all_tables()
+    try:
+        yield
+    finally:
+        await dispose_engine()
+
+
 app = FastAPI(
     title="TJ Watson Main Page",
+    lifespan=lifespan,
     docs_url="/docs" if _docs_enabled else None,
     redoc_url="/redoc" if _docs_enabled else None,
     openapi_url="/openapi.json" if _docs_enabled else None,
@@ -63,11 +83,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def on_startup() -> None:
-    await create_tables()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -121,7 +136,7 @@ def chat(req: ChatRequest):
 
 @app.post("/secom/db/init", response_model=InitDbResponse)
 async def secom_init_db():
-    await create_tables()
+    await create_all_tables()
     return InitDbResponse(
         ok=True,
         message="users 테이블을 준비했습니다.",
@@ -133,9 +148,9 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "apps.main:app",
+        "main:app",
         host="127.0.0.1",
         port=8000,
         reload=True,
-        reload_dirs=["apps"],
+        reload_dirs=[".", "apps"],
     )

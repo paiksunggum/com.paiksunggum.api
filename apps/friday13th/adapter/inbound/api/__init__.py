@@ -3,7 +3,7 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database import get_db
+from core.matrix.oracle_database import get_db
 
 from apps.friday13th.app.ports.input.login_use_case import LoginUseCase
 from apps.friday13th.app.ports.input.signup_use_case import SignupUseCase

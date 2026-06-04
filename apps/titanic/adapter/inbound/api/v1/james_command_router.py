@@ -2,11 +2,12 @@ from csv import DictReader
 from io import StringIO
 import logging
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import ValidationError
+from sqlalchemy.exc import SQLAlchemyError
 
 from .....app.ports.input.james_command_use_case import JamesCommandUseCase
-from .. import get_james_command_use_case
+from .....app.use_cases.james_command_interactor import JamesCommandInteractor
 from ..schemas.james_command_schema import (
     JamesCommandFileUploadResponse,
     JamesCommandSchema,
@@ -35,7 +36,6 @@ def _normalize_header(header: str) -> str:
 @james_router.post("/fileupload", response_model=JamesCommandFileUploadResponse)
 async def upload_titanic_csv(
     file: UploadFile = File(...),
-    use_case: JamesCommandUseCase = Depends(get_james_command_use_case),
 ) -> JamesCommandFileUploadResponse:
     if not file.filename:
         raise HTTPException(status_code=400, detail="파일 이름이 없습니다.")
@@ -69,13 +69,13 @@ async def upload_titanic_csv(
                 detail=f"CSV {row_num}행 형식 오류: {e.errors()[0]['msg']}",
             ) from e
 
-    # 레코드 목록의 상위 5줄만 출력
-    print("[제임스 라우터] 라우터에 업로드된 CSV 파일에서 스키마로 옮겨진 상위 5개 레코드 예시:")
+    #상위 5개 레코드 출력
+    logger.info("[제임스 라우터] 업로드 CSV → 스키마 변환 상위 5개 레코드 예시")
     for record in passengers[:5]:
-        print(record.model_dump(by_alias=True))
+        logger.info("%s", record.model_dump(by_alias=True))
 
+    use_case: JamesCommandUseCase = JamesCommandInteractor()
     try:
-        # 데이터베이스에 저장
         result = await use_case.upload_passengers(passengers)
         inserted = int(result["inserted"])
         return JamesCommandFileUploadResponse(
@@ -85,5 +85,11 @@ async def upload_titanic_csv(
             dataRowCount=inserted,
         )
     except RuntimeError as e:
-        logger.exception("[라우터] CSV 업로드 실패 | 파일=%s", file.filename)
+        logger.exception("[제임스 라우터] CSV 업로드 실패 | 파일=%s", file.filename)
         raise HTTPException(status_code=503, detail=str(e)) from e
+    except SQLAlchemyError as e:
+        logger.exception("[제임스 라우터] DB 저장 실패 | 파일=%s", file.filename)
+        raise HTTPException(
+            status_code=500,
+            detail=f"DB 저장에 실패했습니다: {getattr(e, 'orig', e)}",
+        ) from e

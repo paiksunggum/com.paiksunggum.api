@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Any
+
+from apps.titanic.adapter.inbound.api.schemas.andrew_blueprint_schema import AndrewBlueprintSchema
 
 
 class AndrewBlueprintUseCase(ABC):
+
     @abstractmethod
-    async def get_blueprint() -> dict[str, Any]:
-        """설계도 조회."""
-        ...
+    def introduce_myself(self, schema: AndrewBlueprintSchema):
+        '''앤드류의 자기소개 메소드'''
+        pass

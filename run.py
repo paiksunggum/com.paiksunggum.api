@@ -18,10 +18,10 @@ if __name__ == "__main__":
     # uvicorn 0.36+ Windows 기본은 ProactorEventLoop → psycopg async와 충돌
     loop = "loops:selector_loop_factory" if sys.platform == "win32" else "auto"
     uvicorn.run(
-        "apps.main:app",
+        "main:app",
         host="127.0.0.1",
         port=8000,
         loop=loop,
         reload=reload_enabled,
-        reload_dirs=["apps"],
+        reload_dirs=[".", "apps"],
     )

@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Any
+
+from apps.titanic.app.dtos.andrew_blueprint_dto import AndrewBlueprintQuery
 
 
 class AndrewBlueprintRepository(ABC):
+
     @abstractmethod
-    async def get_blueprint() -> dict[str, Any]:
-        ...
+    def introduce_myself(self, query: AndrewBlueprintQuery):
+        '''앤드류의 자기소개 메소드'''
+        pass

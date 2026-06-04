@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...database import get_db
+from core.matrix.oracle_database import get_db
 
 from .controllers.ad_link_controller import AdLinkController
 from .controllers.ad_stats_daily_controller import AdStatsDailyController
