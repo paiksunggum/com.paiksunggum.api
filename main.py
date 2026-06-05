@@ -37,7 +37,7 @@ keymaker = get_keymaker()
 from apps.chat.app.chat_page import chat_page_html
 from apps.chat.app.chloe_controller import ChloeController
 from apps.chat.app.schemas import ChatRequest, ChatResponse
-from apps.forma.app.forma_routes import router as forma_router
+from apps.sports.app.forma_routes import router as forma_router
 from apps.friday13th.adapter.inbound.api.schemas import InitDbResponse
 from apps.friday13th.adapter.inbound.api.v1.login_router import login_router
 from apps.friday13th.adapter.inbound.api.v1.signup_router import signup_router

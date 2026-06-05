@@ -2,8 +2,9 @@ import logging
 from typing import Any
 
 from sqlalchemy import delete
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.matrix.oracle_database import AsyncSessionLocal, engine
+from core.matrix.oracle_database import engine
 
 from ....app.dtos.james_command_dto import BookingCommand, PersonCommand
 from ....app.ports.output.james_repository import JamesRepository
@@ -47,11 +48,14 @@ def _row_to_booking_command(row: dict[str, str]) -> BookingCommand:
 class JamesPgRepository(JamesRepository):
     """James 출력 포트 → Neon(PostgreSQL) person/booking 테이블."""
 
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
     async def upload_passengers(
         self,
         records: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        if engine is None or AsyncSessionLocal is None:
+        if engine is None:
             raise RuntimeError("DATABASE_URL is not set")
 
         saved_rows: list[dict[str, Any]] = []
@@ -69,20 +73,19 @@ class JamesPgRepository(JamesRepository):
                 (person_cmd, _row_to_booking_command(row), source_row),
             )
 
-        async with AsyncSessionLocal() as session:
-            async with session.begin():
-                await session.execute(delete(BookingORM))
-                await session.execute(delete(PersonORM))
+        async with self._session.begin():
+            await self._session.execute(delete(BookingORM))
+            await self._session.execute(delete(PersonORM))
 
-                for person_cmd, _, _ in pending:
-                    session.add(PersonORM.from_command(person_cmd))
-                await session.flush()
+            for person_cmd, _, _ in pending:
+                self._session.add(PersonORM.from_command(person_cmd))
+            await self._session.flush()
 
-                for person_cmd, booking_cmd, source_row in pending:
-                    session.add(
-                        BookingORM.from_command(person_cmd.passenger_id, booking_cmd),
-                    )
-                    saved_rows.append(source_row)
+            for person_cmd, booking_cmd, source_row in pending:
+                self._session.add(
+                    BookingORM.from_command(person_cmd.passenger_id, booking_cmd),
+                )
+                saved_rows.append(source_row)
 
         logger.info(
             "[제임스 pg 레포지터리] Neon 저장 완료 | persons/bookings 각 %d행",

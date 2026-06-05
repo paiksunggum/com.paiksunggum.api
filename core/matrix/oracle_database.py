@@ -80,7 +80,7 @@ async def create_all_tables() -> None:
     if engine is None:
         return
 
-    from apps.forma.app.models.users_model import User  # noqa: F401
+    from apps.sports.app.models.users_model import User  # noqa: F401
     from apps.titanic.adapter.outbound.orm.booking_orm import BookingORM  # noqa: F401
     from apps.titanic.adapter.outbound.orm.person_orm import PersonORM  # noqa: F401
     from sqlmodel import SQLModel

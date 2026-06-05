@@ -6,53 +6,57 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.matrix.oracle_database import get_db
 
-from .controllers.ad_link_controller import AdLinkController
-from .controllers.ad_stats_daily_controller import AdStatsDailyController
-from .controllers.ads_controller import AdsController
-from .controllers.analysis_history_controller import AnalysisHistoryController
-from .controllers.feedback_comments_controller import FeedbackCommentController
-from .controllers.feedback_controller import FeedbackController
-from .controllers.forma_seed_controller import FormaSeedController
-from .controllers.frame_controller import FrameController
-from .controllers.payment_logs_controller import PaymentLogController
-from .controllers.practice_controller import PracticeController
-from .controllers.sports_controller import SportsController
-from .controllers.subscriptions_controller import SubscriptionsController
-from .controllers.user_skills_controller import UserSkillController
-from .controllers.users_ad_controller import UsersAdController
-from .controllers.users_controller import UsersController
-from .controllers.video_controller import VideoController
-from .controllers.video_practice_match_controller import VideoPracticeMatchController
-from .schemas.ad_link_schema import AdExposureCreateRequest, AdLinkResponse
-from .schemas.ad_stats_daily_schema import (
+from apps.admin.app.controllers.ad_stats_daily_controller import AdStatsDailyController
+from apps.admin.app.controllers.ads_controller import AdsController
+from apps.admin.app.controllers.practice_controller import PracticeController
+from apps.admin.app.controllers.sports_controller import SportsController
+from apps.admin.app.controllers.users_ad_controller import UsersAdController
+from apps.admin.app.schemas.ad_stats_daily_schema import (
     AdStatsDailyNestedCreateRequest,
     AdStatsDailyResponse,
 )
-from .schemas.ads_schema import AdCreateRequest, AdResponse
-from .schemas.analysis_history_schema import (
+from apps.admin.app.schemas.ads_schema import AdCreateRequest, AdResponse
+from apps.admin.app.schemas.practice_schema import PracticeCreateRequest, PracticeResponse
+from apps.admin.app.schemas.sports_schema import SportCreateRequest, SportResponse
+from apps.admin.app.schemas.users_ad_schema import UsersAdNestedCreateRequest, UsersAdResponse
+from apps.vision.app.controllers.analysis_history_controller import AnalysisHistoryController
+from apps.vision.app.controllers.feedback_comments_controller import FeedbackCommentController
+from apps.vision.app.controllers.feedback_controller import FeedbackController
+from apps.vision.app.controllers.frame_controller import FrameController
+from apps.vision.app.schemas.analysis_history_schema import (
     AnalysisHistoryResponse,
     AnalysisHistoryStartRequest,
     AnalysisHistoryUpdateRequest,
 )
-from .schemas.feedback_comments_schema import (
+from apps.vision.app.schemas.feedback_comments_schema import (
     FeedbackCommentNestedCreateRequest,
     FeedbackCommentResponse,
 )
-from .schemas.feedback_schema import FeedbackNestedCreateRequest, FeedbackResponse
-from .schemas.frame_schema import FrameNestedCreateRequest, FrameResponse
+from apps.vision.app.schemas.feedback_schema import FeedbackNestedCreateRequest, FeedbackResponse
+from apps.vision.app.schemas.frame_schema import FrameNestedCreateRequest, FrameResponse
+
+from .controllers.ad_link_controller import AdLinkController
+from .controllers.payment_logs_controller import PaymentLogController
+from .controllers.subscription_plans_controller import SubscriptionPlansController
+from .controllers.subscriptions_controller import SubscriptionsController
+from .controllers.user_skills_controller import UserSkillController
+from .controllers.users_controller import UsersController
+from .controllers.video_controller import VideoController
+from .controllers.video_practice_match_controller import VideoPracticeMatchController
+from .schemas.ad_link_schema import AdExposureCreateRequest, AdLinkResponse
 from .schemas.payment_logs_schema import (
     PaymentLogNestedCreateRequest,
     PaymentLogResponse,
 )
-from .schemas.practice_schema import PracticeCreateRequest, PracticeResponse
-from .schemas.seed_schema import SeedDemoCsvResponse
-from .schemas.sports_schema import SportCreateRequest, SportResponse
+from .schemas.subscription_plans_schema import (
+    SubscriptionPlanCreateRequest,
+    SubscriptionPlanResponse,
+)
 from .schemas.subscriptions_schema import (
     SubscriptionNestedCreateRequest,
     SubscriptionResponse,
 )
 from .schemas.user_skills_schema import UserSkillNestedCreateRequest, UserSkillResponse
-from .schemas.users_ad_schema import UsersAdNestedCreateRequest, UsersAdResponse
 from .schemas.users_schema import FormaUserCreateRequest, FormaUserResponse
 from .schemas.video_practice_match_schema import (
     VideoPracticeMatchNestedCreateRequest,
@@ -69,20 +73,6 @@ def _integrity(detail: str = "제약 조건 위반입니다.") -> HTTPException:
 
 def _not_found(detail: str) -> HTTPException:
     return HTTPException(status_code=404, detail=detail)
-
-
-# --- Dev seed ---
-
-
-@router.post("/seed-demo-csv", response_model=SeedDemoCsvResponse)
-async def forma_seed_demo_csv(
-    limit: int = 15,
-    db: AsyncSession = Depends(get_db),
-):
-    try:
-        return await FormaSeedController(db).seed_demo_from_country_csv(limit=limit)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 # --- Users (Secom shared) ---
@@ -371,6 +361,27 @@ async def forma_create_user_skill(
     except IntegrityError:
         await db.rollback()
         raise _integrity("참조 user/practice id가 없거나 제약 조건 위반입니다.") from None
+
+
+# --- Subscription plans (master) ---
+
+
+@router.get("/subscription-plans", response_model=list[SubscriptionPlanResponse])
+async def forma_list_subscription_plans(db: AsyncSession = Depends(get_db)):
+    rows = await SubscriptionPlansController(db).list_plans()
+    return [SubscriptionPlanResponse.model_validate(r) for r in rows]
+
+
+@router.post("/subscription-plans", response_model=SubscriptionPlanResponse)
+async def forma_create_subscription_plan(
+    req: SubscriptionPlanCreateRequest, db: AsyncSession = Depends(get_db)
+):
+    try:
+        row = await SubscriptionPlansController(db).create_plan(req)
+        return SubscriptionPlanResponse.model_validate(row)
+    except IntegrityError:
+        await db.rollback()
+        raise _integrity("중복된 plan_code이거나 제약 조건 위반입니다.") from None
 
 
 # --- Subscriptions & payments ---

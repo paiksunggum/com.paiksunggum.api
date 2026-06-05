@@ -1,3 +1,5 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from apps.titanic.app.dtos.andrew_blueprint_dto import AndrewBlueprintQuery
 from apps.titanic.app.ports.output.andrew_blueprint_repository import AndrewBlueprintRepository
 import logging
@@ -7,8 +9,8 @@ logger = logging.getLogger("apps")
 class AndrewBlueprintPgRepository(AndrewBlueprintRepository):
     '''PostgreSQL을 이용한 앤드류의 승객 명단 관리 저장소'''
 
-    def __init__(self):
-        pass
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
 
     def introduce_myself(self, query: AndrewBlueprintQuery):
         '''승객 명단을 가져오는 메소드'''

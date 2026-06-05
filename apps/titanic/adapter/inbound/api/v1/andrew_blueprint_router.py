@@ -1,26 +1,29 @@
-from fastapi import APIRouter
-from apps.titanic.adapter.inbound.api.schemas.andrew_blueprint_schema import AndrewBlueprintSchema
-from apps.titanic.app.ports.input.andrew_blueprint_use_case import AndrewBlueprintUseCase
-from apps.titanic.app.use_cases.andrew_blueprint_interactor import AndrewBlueprintInteractor
 import logging
+
+from fastapi import APIRouter, Depends
+from apps.titanic.adapter.inbound.api.schemas.andrew_blueprint_schema import AndrewBlueprintSchema
+from apps.titanic.app.dtos.andrew_blueprint_dto import AndrewBlueprintResponse
+from apps.titanic.app.ports.input.andrew_blueprint_use_case import AndrewBlueprintUseCase
+from apps.titanic.dependencies.andrew_blueprint import get_andrew_blueprint_use_case
+
+'''
+영화 <타이타닉>에서 승객 명단을 관리하는 
+일등 항해사 윌터 와일딩(Andrew / 혹은 윌리엄 머독 등 영화 속 관리자 캐릭터) 
+또는 승객 명단(Passenger List)을 다루는 '월터'라는 인물의 상황에 맞추어, 
+직관적이면서도 센스 있는 중간 키워드를 추천해 드립니다.
+'''
 logger = logging.getLogger("apps")
 andrew_blueprint_router = APIRouter(prefix="/andrew", tags=["andrew"])
 
 
-
 @andrew_blueprint_router.get("/myself")
-async def introduce_myself():
-    schema = AndrewBlueprintSchema()
+async def introduce_myself(
+    andrew: AndrewBlueprintUseCase = Depends(get_andrew_blueprint_use_case),
+)-> AndrewBlueprintResponse:
 
-    logger.info("##################################################")
-    logger.info("🎶[앤드류 라우터] 앤드류의 자기소개글을 가져오는 API 호출")
-    logger.info(f"🐱‍👤ID: {schema.id}")
-    logger.info(f"🐱‍👓이름: {schema.name}")
-    logger.info(f"🐱‍🐉메모: {schema.memo}")
-    logger.info("##################################################")
-
-
-    andrew: AndrewBlueprintUseCase = AndrewBlueprintInteractor()
-    andrew.introduce_myself(schema)
-
-    pass
+    return await andrew.introduce_myself(
+        AndrewBlueprintSchema(
+            id=2,
+            name="Andrew",
+            memo="타이타닉의 일등 항해사, 승객 명단 관리 담당")
+        )
