@@ -1,0 +1,25 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+"""
+LoweBoat 의존성 조립소 (DIP 팩토리).
+
+DIP 원칙:
+  - 라우터는 구현체(LoweBoatPgRepository)를 직접 알지 못한다.
+  - 리턴 타입은 구현체가 아닌 포트(LoweBoatUseCase)로 선언한다.
+  - 세션은 core 의 get_db 에서 주입받는다 (AsyncSession).
+"""
+from fastapi import Depends
+
+from core.matrix.oracle_database import get_db
+from apps.titanic.adapter.outbound.pg.crew_lowe_boat_pg_repository import (
+    LoweBoatPgRepository,
+)
+from apps.titanic.app.ports.input.crew_lowe_boat_use_case import LoweBoatUseCase
+from apps.titanic.app.ports.output.crew_lowe_boat_repository import LoweBoatRepository
+from apps.titanic.app.use_cases.crew_lowe_boat_interactor import LoweBoatInteractor
+
+
+def get_lowe_boat_use_case(
+    db: AsyncSession = Depends(get_db),
+) -> LoweBoatUseCase:
+    repository: LoweBoatRepository = LoweBoatPgRepository(session=db)
+    return LoweBoatInteractor(repository=repository)

@@ -1,7 +1,7 @@
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from apps.titanic.app.dtos.james_command_dto import BookingCommand
+from apps.titanic.app.dtos.crew_james_command_dto import BookingCommand
 from core.matrix.oracle_database import Base
 
 
