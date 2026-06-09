@@ -1,74 +1,66 @@
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class JamesCommandResponseSchema(BaseModel):
+
+    id: int
+    name: str
+
+
 class JamesCommandSchema(BaseModel):
-    """
-    Titanic CSV 한 row(승객 1명) 입력 스키마.
-
-    컬럼: PassengerId, Survived, Pclass, Name, Sex→gender, Age,
-    SibSp, Parch, Ticket, Fare, Cabin, Embarked
-    """
-
-    model_config = ConfigDict(populate_by_name=True)
-
-    passenger_id: str = Field(alias="PassengerId")
-    survived: str = Field(alias="Survived")
-    pclass: str = Field(alias="Pclass")
-    name: str = Field(alias="Name")
-    gender: str = Field(alias="Sex")
-    age: str = Field(alias="Age")
-    sib_sp: str = Field(alias="SibSp")
-    parch: str = Field(alias="Parch")
-    ticket: str = Field(alias="Ticket")
-    fare: str = Field(alias="Fare")
-    cabin: str = Field(default="", alias="Cabin")
-    embarked: str = Field(alias="Embarked")
-
-
-class JamesCommandFileUploadResponse(BaseModel):
-    ok: bool = Field(True, description="Upload succeeded")
-    inserted: int = Field(891, description="Inserted row count")
-    fileName: str = Field("train.csv", description="Uploaded file name")
-    columns: list[str] = Field(
-        default_factory=lambda: [
-            "PassengerId",
-            "Survived",
-            "Pclass",
-            "Name",
-            "Sex",
-            "Age",
-            "SibSp",
-            "Parch",
-            "Ticket",
-            "Fare",
-            "Cabin",
-            "Embarked",
-        ],
-        description="Normalized CSV column names",
-    )
-    dataRowCount: int = Field(891, description="Parsed data row count")
-
-    model_config = ConfigDict(
-        json_schema_extra={
+    
+    id: int = Field(0, description="Director ID")
+    name: str = Field("제임스 카메론", description="Titanic Director")
+    
+    model_config = {
+        "json_schema_extra": {
             "example": {
-                "ok": True,
-                "inserted": 891,
-                "fileName": "train.csv",
-                "columns": [
-                    "PassengerId",
-                    "Survived",
-                    "Pclass",
-                    "Name",
-                    "Sex",
-                    "Age",
-                    "SibSp",
-                    "Parch",
-                    "Ticket",
-                    "Fare",
-                    "Cabin",
-                    "Embarked",
-                ],
-                "dataRowCount": 891,
+                "id": 1,
+                "name": "James Cameron",
             }
         }
-    )
+    }
+
+
+
+class JamesCommandFileUploadSchema(BaseModel):
+    
+    passenger_id: Optional[str] = Field(None, description="승객 번호")
+    survived: Optional[str] = Field(None, description="생존 여부 (0=사망, 1=생존)")
+    pclass: Optional[str] = Field(None, description="티켓 등급 (1=1등석, 2=2등석, 3=3등석)")
+    name: Optional[str] = Field(None, description="승객 이름")
+    gender: Optional[str] = Field(None, description="성별 (male / female) — CSV의 Sex 컬럼을 정규화")
+    age: Optional[str] = Field(None, description="나이")
+    sib_sp: Optional[str] = Field(None, description="동승한 형제자매/배우자 수")
+    parch: Optional[str] = Field(None, description="동승한 부모/자녀 수")
+    ticket: Optional[str] = Field(None, description="티켓 번호")
+    fare: Optional[str] = Field(None, description="탑승 요금")
+    cabin: Optional[str] = Field(None, description="객실 번호")
+    embarked: Optional[str] = Field(None, description="탑승 항구 (C=Cherbourg, Q=Queenstown, S=Southampton)")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "passenger_id": "1",
+                "survived": "0",
+                "pclass": "3",
+                "name": "Braund, Mr. Owen Harris",
+                "gender": "male",
+                "age": "22",
+                "sibsp": "1",
+                "parch": "0",
+                "ticket": "A/5 21171",
+                "fare": "7.25",
+                "cabin": "",
+                "embarked": "S",
+            }
+        }
+     }
+
+class JamesCommandFileUploadResponse(BaseModel):
+    inserted: int
+    fileName: str
+    columns: list[str]
+    dataRowCount: int

@@ -7,6 +7,7 @@ from apps.titanic.adapter.inbound.api.schemas.crew_andrew_blueprint_schema impor
 )
 from apps.titanic.app.ports.input.crew_andrew_blueprint_use_case import AndrewBlueprintUseCase
 from apps.titanic.dependencies.crew_andrew_blueprint_provider import get_andrew_blueprint_use_case
+from apps.titanic.app.dtos.crew_andrew_blueprint_dto import AndrewBlueprintQuery, AndrewBlueprintResponse
 
 '''
 영화 <타이타닉>에서 승객 명단을 관리하는
@@ -22,15 +23,10 @@ andrew_blueprint_router = APIRouter(prefix="/andrew", tags=["andrew"])
 async def introduce_myself(
     andrew: AndrewBlueprintUseCase = Depends(get_andrew_blueprint_use_case),
 ) -> AndrewBlueprintResponseSchema:
-    result = await andrew.introduce_myself(
+
+    return await andrew.introduce_myself(
         AndrewBlueprintSchema(
             id=6,
             name="Andrew Blueprint",
-            memo="타이타닉의 일등 항해사, 승객 명단 관리 담당",
-        )
-    )
-    return AndrewBlueprintResponseSchema(
-        id=result.id,
-        name=result.name,
-        memo=result.memo,
+            memo="타이타닉의 일등 항해사, 승객 명단 관리 담당")
     )

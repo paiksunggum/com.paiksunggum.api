@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import APIRouter, Depends
-from apps.titanic.adapter.inbound.api.schemas.crew_lowe_boat_chema import (
+from apps.titanic.adapter.inbound.api.schemas.crew_lowe_boat_schema import (
     LoweBoatResponseSchema,
     LoweBoatSchema,
 )

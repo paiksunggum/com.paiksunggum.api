@@ -6,57 +6,65 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.matrix.oracle_database import engine
 
-from ....app.dtos.crew_james_command_dto import BookingCommand, PersonCommand
+from ....app.dtos.crew_james_command_dto import BookingCommand, JamesCommandQuery, JamesCommandResponse, PersonCommand
 from ....app.ports.output.crew_james_repository import JamesRepository
-from ..orm.booking_orm import BookingORM
-from ..orm.person_orm import PersonORM
+from ..orm.passenger_rose_model_orm import RoseModelORM
+from ..orm.passenger_jack_trainer_orm import JackTrainerORM
 
 logger = logging.getLogger("apps")
 
 
 class JamesPgRepository(JamesRepository):
-    """James 출력 포트 → Neon(PostgreSQL) person/booking 테이블."""
-
     def __init__(self, session: AsyncSession) -> None:
-        self._session = session
+        self.session = session
+
+    async def introduce_myself(self, query: JamesCommandQuery) -> JamesCommandResponse:
+
+        '''제임스 감독의 자기 소개 레포지토리 구현 메소드'''
+
+        logger.info(f"[JamesPgRepository] introduce_myself 진입 | request_data={query}")
+
+        response: JamesCommandResponse = JamesCommandResponse(
+            id= query.id * 10000,
+            name= query.name + "가 레포지토리에 다녀옴"
+        )
+        return response
+
 
     async def upload_passengers(
         self,
         person_commands: list[PersonCommand],
         booking_commands: list[BookingCommand],
-    ) -> dict[str, Any]:
-        if engine is None:
-            raise RuntimeError("DATABASE_URL is not set")
+    ) -> int:
+        person_orms = [
+            JackTrainerORM(
+                passenger_id=command.passenger_id,
+                name=command.name,
+                gender=command.gender,
+                age=command.age,
+                sib_sp=command.sib_sp,
+                parch=command.parch,
+                survived=command.survived,
+            )
+            for command in person_commands
+        ]
+        self.session.add_all(person_orms)
+        await self.session.flush()
 
-        pending: list[tuple[PersonCommand, BookingCommand]] = []
-        for person_cmd, booking_cmd in zip(person_commands, booking_commands, strict=True):
-            if not person_cmd.passenger_id:
-                continue
-            pending.append((person_cmd, booking_cmd))
+        booking_orms = [
+            RoseModelORM(
+                passenger_id=person_orm.passenger_id,
+                pclass=command.pclass,
+                ticket=command.ticket,
+                fare=command.fare,
+                cabin=command.cabin,
+                embarked=command.embarked,
+            )
+            for person_orm, command in zip(person_orms, booking_commands)
+        ]
+        self.session.add_all(booking_orms)
+        await self.session.commit()
 
-        async with self._session.begin():
-            await self._session.execute(delete(BookingORM))
-            await self._session.execute(delete(PersonORM))
+        return len(person_orms)
 
-            for person_cmd, _ in pending:
-                self._session.add(PersonORM.from_command(person_cmd))
-            await self._session.flush()
-
-            for person_cmd, booking_cmd in pending:
-                self._session.add(
-                    BookingORM.from_command(person_cmd.passenger_id, booking_cmd),
-                )
-
-        inserted = len(pending)
-        logger.info(
-            "[JamesPgRepository] Neon 저장 완료 | persons/bookings 각 %d행",
-            inserted,
-        )
-
-        return {
-            "ok": True,
-            "inserted": inserted,
-            "rowCount": inserted,
-            "dataRowCount": inserted,
-            "storedIn": "neon",
-        }
+        

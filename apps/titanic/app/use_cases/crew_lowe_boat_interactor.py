@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 
 
-from apps.titanic.adapter.inbound.api.schemas.crew_lowe_boat_chema import LoweBoatSchema
+from apps.titanic.adapter.inbound.api.schemas.crew_lowe_boat_schema import LoweBoatSchema
 from apps.titanic.app.dtos.crew_lowe_boat_dto import LoweBoatQuery, LoweBoatResponse
 from apps.titanic.app.ports.input.crew_lowe_boat_use_case import LoweBoatUseCase
 from apps.titanic.app.ports.output.crew_lowe_boat_repository import LoweBoatRepository

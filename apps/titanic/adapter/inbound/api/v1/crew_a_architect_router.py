@@ -1,12 +1,14 @@
 import logging
 
 from fastapi import APIRouter, Depends
+
 from apps.titanic.adapter.inbound.api.schemas.crew_a_architect_schema import (
     AArchitectResponseSchema,
     AArchitectSchema,
 )
 from apps.titanic.app.ports.input.crew_a_architect_use_case import AArchitectUseCase
 from apps.titanic.dependencies.crew_a_architect_provider import get_a_architect_use_case
+from apps.titanic.app.dtos.crew_a_architect_dto import AArchitectQuery, AArchitectResponse
 
 '''
 토마스 에이 (Thomas A)
@@ -22,10 +24,9 @@ a_architect_router = APIRouter(prefix="/a", tags=["a"])
 async def introduce_myself(
     a: AArchitectUseCase = Depends(get_a_architect_use_case),
 ) -> AArchitectResponseSchema:
-    result = await a.introduce_myself(
+
+    return await a.introduce_myself(
         AArchitectSchema(
             id=2,
-            name="Thomas A",
-        )
+            name="Thomas A")
     )
-    return AArchitectResponseSchema(id=result.id, name=result.name)

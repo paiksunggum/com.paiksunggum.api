@@ -22,3 +22,5 @@ class AArchitectInteractor(AArchitectUseCase):
             id = schema.id,
             name = schema.name
         ))
+
+        

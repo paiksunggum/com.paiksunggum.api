@@ -5,8 +5,8 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.titanic.adapter.outbound.orm.booking_orm import BookingORM
-from apps.titanic.adapter.outbound.orm.person_orm import PersonORM
+from apps.titanic.adapter.outbound.orm.passenger_rose_model_orm import RoseModelORM
+from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerORM
 from apps.titanic.app.dtos.passenger_rose_model_dto import RoseModelQuery, RoseModelResponse
 from apps.titanic.app.ports.output.passenger_rose_model_repository import RoseModelRepository
 

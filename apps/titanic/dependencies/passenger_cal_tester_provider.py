@@ -15,7 +15,7 @@ from apps.titanic.adapter.outbound.pg.passenger_cal_tester_pg_repository import 
 )
 from apps.titanic.app.ports.input.passenger_cal_tester_use_case import CalTesterUseCase
 from apps.titanic.app.ports.output.passenger_cal_tester_repository import CalTestRepository
-from apps.titanic.app.use_cases.passengger_cal_tester_interactor import CalTesterInteractor
+from apps.titanic.app.use_cases.passenger_cal_tester_interactor import CalTesterInteractor
 
 
 def get_cal_tester_use_case(

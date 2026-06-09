@@ -2,6 +2,13 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
+
+class JackTrainerResponseSchema(BaseModel):
+
+    id: int
+    name: str
+
+
 class JackTrainerSchema(BaseModel):
     
     id: int = Field(0, description="Passenger ID")
@@ -16,21 +23,7 @@ class JackTrainerSchema(BaseModel):
             }
         }
     }
-
-
-class JackTrainerResponseSchema(BaseModel):
-    id: int = Field(9, description="Passenger ID")
-    name: str = Field("Jack Dawson", description="Passenger's name")
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "id": 9,
-                "name": "Jack Dawson",
-            }
-        }
-    }
-
+    
 
 class ModelInfoResponse(BaseModel):
     model_name: str

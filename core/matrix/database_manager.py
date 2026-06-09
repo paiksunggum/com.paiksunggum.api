@@ -81,8 +81,8 @@ async def create_all_tables() -> None:
         return
 
     from apps.sports.app.models.users_model import User  # noqa: F401
-    from apps.titanic.adapter.outbound.orm.booking_orm import BookingORM  # noqa: F401
-    from apps.titanic.adapter.outbound.orm.person_orm import PersonORM  # noqa: F401
+    from apps.titanic.adapter.outbound.orm.passenger_rose_model_orm import RoseModelORM  # noqa: F401
+    from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerORM  # noqa: F401
     from sqlmodel import SQLModel
 
     async with engine.begin() as conn:

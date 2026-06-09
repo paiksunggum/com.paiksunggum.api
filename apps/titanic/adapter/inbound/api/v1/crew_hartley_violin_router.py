@@ -22,10 +22,10 @@ hartley_violin_router = APIRouter(prefix="/hartley", tags=["hartley"])
 async def introduce_myself(
     hartley: HartleyViolinUseCase = Depends(get_hartley_violin_use_case),
 ) -> HartleyViolinResponseSchema:
-    result = await hartley.introduce_myself(
+
+    return await hartley.introduce_myself(
         HartleyViolinSchema(
             id=3,
-            name="Wallace Hartley",
+            name="Wallace Hartley"
         )
     )
-    return HartleyViolinResponseSchema(id=result.id, name=result.name)

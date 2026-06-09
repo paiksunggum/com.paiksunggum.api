@@ -5,7 +5,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.titanic.adapter.outbound.orm.person_orm import PersonORM
+from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerORM
 from apps.titanic.app.dtos.crew_smith_captain_dto import SmithCaptainQuery, SmithCaptainResponse
 from apps.titanic.app.ports.output.crew_smith_captain_repository import SmithCaptainRepository
 

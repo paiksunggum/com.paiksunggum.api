@@ -10,6 +10,8 @@ from .....app.ports.input.crew_james_command_use_case import JamesCommandUseCase
 from .....dependencies.crew_james_command_provider import get_james_command_use_case
 from ..schemas.crew_james_command_schema import (
     JamesCommandFileUploadResponse,
+    JamesCommandFileUploadSchema,
+    JamesCommandResponseSchema,
     JamesCommandSchema,
 )
 
@@ -21,9 +23,17 @@ from ..schemas.crew_james_command_schema import (
  고증한 아키텍처의 총괄 디렉터 역할 수행
 '''
 
-james_router = APIRouter(prefix="/titanic/james", tags=["james"])
+james_router = APIRouter(prefix="/james", tags=["james"])
 logger = logging.getLogger("apps")
 
+@james_router.get("/myself", response_model=JamesCommandResponseSchema)
+async def introduce_myself(
+    james: JamesCommandUseCase = Depends(get_james_command_use_case),
+) -> JamesCommandResponseSchema:
+    result = await james.introduce_myself(
+        JamesCommandSchema(id=1, name="James Cameron")
+    )
+    return JamesCommandResponseSchema(id=result.id, name=result.name)
 
 def _decode_csv_bytes(raw: bytes) -> str:
     for encoding in ("utf-8-sig", "cp949"):
@@ -36,9 +46,15 @@ def _decode_csv_bytes(raw: bytes) -> str:
 
 def _normalize_header(header: str) -> str:
     lowered = header.strip().lower()
-    if lowered in {"sex", "성별"}:
-        return "gender"
-    return header.strip()
+    mapping = {
+        "sex": "gender",
+        "성별": "gender",
+        "passengerid": "passenger_id",
+        "sibsp": "sib_sp",
+    }
+    return mapping.get(lowered, lowered)
+
+    
 
 
 def _require_csv_upload(filename: str | None, raw: bytes) -> str:
@@ -53,7 +69,7 @@ def _require_csv_upload(filename: str | None, raw: bytes) -> str:
 
 def _parse_titanic_csv(
     raw: bytes,
-) -> tuple[list[JamesCommandSchema], list[str]]:
+) -> tuple[list[JamesCommandFileUploadSchema], list[str]]:
     csv_text = _decode_csv_bytes(raw)
     reader = DictReader(StringIO(csv_text))
 
@@ -61,7 +77,7 @@ def _parse_titanic_csv(
         raise HTTPException(status_code=400, detail="CSV 헤더를 찾을 수 없습니다.")
 
     normalized_columns = [_normalize_header(name) for name in reader.fieldnames]
-    passengers: list[JamesCommandSchema] = []
+    passengers: list[JamesCommandFileUploadSchema] = []
 
     for row_num, source_row in enumerate(reader, start=2):
         normalized_row: dict[str, str] = {}
@@ -70,7 +86,7 @@ def _parse_titanic_csv(
                 continue
             normalized_row[_normalize_header(original_key)] = value or ""
         try:
-            passengers.append(JamesCommandSchema.model_validate(normalized_row))
+            passengers.append(JamesCommandFileUploadSchema.model_validate(normalized_row))
         except ValidationError as e:
             raise HTTPException(
                 status_code=400,

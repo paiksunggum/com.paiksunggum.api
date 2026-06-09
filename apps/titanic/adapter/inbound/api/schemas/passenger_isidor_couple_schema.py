@@ -1,5 +1,12 @@
 from pydantic import BaseModel, Field
 
+
+class IsidorCoupleResponseSchema(BaseModel):
+
+    id: int
+    name: str
+
+
 class IsidorCoupleSchema(BaseModel):
     
     id: int = Field(0, description="Passenger ID")
@@ -15,16 +22,3 @@ class IsidorCoupleSchema(BaseModel):
         }
     }
 
-
-class IsidorCoupleResponseSchema(BaseModel):
-    id: int = Field(8, description="Passenger ID")
-    name: str = Field("Isidor Straus", description="Passenger's name")
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "id": 8,
-                "name": "Isidor Straus",
-            }
-        }
-    }

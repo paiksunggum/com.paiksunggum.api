@@ -26,6 +26,13 @@ class BookingCommand:
     embarked: str
 
 
+@dataclass(frozen=True)
+class JamesCommandQuery:
+    id: int
+    name: str
+
+
 @dataclass
 class JamesCommandResponse:
-    answer: str
+    id: int
+    name: str

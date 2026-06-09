@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from apps.titanic.adapter.inbound.api.schemas.crew_lowe_boat_chema import LoweBoatSchema
+from apps.titanic.adapter.inbound.api.schemas.crew_lowe_boat_schema import LoweBoatSchema
 from apps.titanic.app.dtos.crew_lowe_boat_dto import LoweBoatQuery, LoweBoatResponse
 
 class LoweBoatUseCase(ABC):

@@ -5,14 +5,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from typing import Any
 
-from apps.titanic.adapter.outbound.orm.booking_orm import BookingORM
-from apps.titanic.adapter.outbound.orm.person_orm import PersonORM
+from apps.titanic.adapter.outbound.orm.passenger_rose_model_orm import RoseModelORM
+from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerORM
 from apps.titanic.app.dtos.crew_andrew_blueprint_dto import AndrewBlueprintQuery, AndrewBlueprintResponse
 from apps.titanic.app.ports.output.crew_andrew_blueprint_repository import AndrewBlueprintRepository
 import logging
 logger = logging.getLogger("apps")
 
-def _row_to_dict(person: PersonORM, booking: BookingORM | None) -> dict[str, Any]:
+def _row_to_dict(person: JackTrainerORM, booking: RoseModelORM | None) -> dict[str, Any]:
     return {
         "id": person.id,
         "passenger_id": person.passenger_id,
