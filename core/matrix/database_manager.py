@@ -83,11 +83,13 @@ async def create_all_tables() -> None:
     from apps.sports.app.models.users_model import User  # noqa: F401
     from apps.titanic.adapter.outbound.orm.passenger_rose_model_orm import RoseModelORM  # noqa: F401
     from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerORM  # noqa: F401
+    from core.matrix.theone_base import TheOneBase
     from sqlmodel import SQLModel
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         await conn.run_sync(SQLModel.metadata.create_all)
+        await conn.run_sync(TheOneBase.metadata.create_all)
 
 
 async def neon_now(db: AsyncSession) -> dict[str, str]:

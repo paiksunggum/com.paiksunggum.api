@@ -1,10 +1,7 @@
 import logging
-from typing import Any
 
-from sqlalchemy import delete
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from core.matrix.oracle_database import engine
 
 from ....app.dtos.crew_james_command_dto import BookingCommand, JamesCommandQuery, JamesCommandResponse, PersonCommand
 from ....app.ports.output.crew_james_repository import JamesRepository
@@ -36,35 +33,58 @@ class JamesPgRepository(JamesRepository):
         person_commands: list[PersonCommand],
         booking_commands: list[BookingCommand],
     ) -> int:
-        person_orms = [
-            JackTrainerORM(
-                passenger_id=command.passenger_id,
-                name=command.name,
-                gender=command.gender,
-                age=command.age,
-                sib_sp=command.sib_sp,
-                parch=command.parch,
-                survived=command.survived,
-            )
-            for command in person_commands
+        passenger_ids = [c.passenger_id for c in person_commands]
+
+        # 이미 존재하는 passenger_id 조회
+        from sqlalchemy import select
+        result = await self.session.execute(
+            select(JackTrainerORM.passenger_id).where(JackTrainerORM.passenger_id.in_(passenger_ids))
+        )
+        existing_ids = {row[0] for row in result}
+
+        # 신규만 필터링
+        new_pairs = [
+            (cp, cb)
+            for cp, cb in zip(person_commands, booking_commands)
+            if cp.passenger_id not in existing_ids
         ]
-        self.session.add_all(person_orms)
+
+        if not new_pairs:
+            logger.info("[JamesPgRepository] 신규 승객 없음 | 저장=0행")
+            return 0
+
+        new_persons, new_bookings = zip(*new_pairs)
+
+        # persons 신규 삽입
+        stmt = pg_insert(JackTrainerORM).values([
+            {
+                "passenger_id": c.passenger_id,
+                "name": c.name,
+                "gender": c.gender,
+                "age": c.age,
+                "sib_sp": c.sib_sp,
+                "parch": c.parch,
+                "survived": c.survived,
+            }
+            for c in new_persons
+        ])
+        stmt = stmt.on_conflict_do_nothing()
+        await self.session.execute(stmt)
         await self.session.flush()
 
-        booking_orms = [
+        # bookings 신규 삽입
+        self.session.add_all([
             RoseModelORM(
-                passenger_id=person_orm.passenger_id,
-                pclass=command.pclass,
-                ticket=command.ticket,
-                fare=command.fare,
-                cabin=command.cabin,
-                embarked=command.embarked,
+                passenger_id=cp.passenger_id,
+                pclass=cb.pclass,
+                ticket=cb.ticket,
+                fare=cb.fare,
+                cabin=cb.cabin,
+                embarked=cb.embarked,
             )
-            for person_orm, command in zip(person_orms, booking_commands)
-        ]
-        self.session.add_all(booking_orms)
+            for cp, cb in zip(new_persons, new_bookings)
+        ])
         await self.session.commit()
 
-        return len(person_orms)
-
-        
+        logger.info("[JamesPgRepository] upload_passengers 완료 | 저장=%d행", len(new_pairs))
+        return len(new_pairs)

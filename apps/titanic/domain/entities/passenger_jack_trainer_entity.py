@@ -2,7 +2,7 @@
 from typing import Optional
 from ..value_objects.passenger_jack_trainer_vo import PassengerId, Gender, Age, FamilyRelation, SurvivedStatus
 
-
+@dataclass
 class JackTrainerEntity:
     """
     JackTrainer Entity.

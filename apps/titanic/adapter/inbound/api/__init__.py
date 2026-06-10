@@ -15,7 +15,7 @@ from apps.titanic.adapter.inbound.api.v1.passenger_molly_scaler_router import mo
 from apps.titanic.adapter.inbound.api.v1.passenger_rose_model_router import rose_model_router
 from apps.titanic.adapter.inbound.api.v1.passenger_ruth_validation_router import ruth_validation_router
 
-titanic_router = APIRouter(prefix="/titanic", tags=["titanic"])
+titanic_router = APIRouter(prefix="/api/titanic", tags=["titanic"])
 titanic_router.include_router(james_router)
 titanic_router.include_router(andrew_blueprint_router)
 titanic_router.include_router(a_architect_router)
