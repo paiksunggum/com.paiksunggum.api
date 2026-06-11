@@ -84,6 +84,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(titanic_router, prefix="/api")
 
 @app.get("/", response_class=HTMLResponse)
 def read_root():

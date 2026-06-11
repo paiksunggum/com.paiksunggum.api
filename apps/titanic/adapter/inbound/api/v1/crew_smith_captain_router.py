@@ -1,9 +1,12 @@
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from apps.titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import (
     SmithCaptainResponseSchema,
-    SmithCaptainSchema,
+    ChatSchema,
+    SmithCaptainChatRequestSchema,
+    SmithCaptainChatResponseSchema,
 )
 from apps.titanic.app.ports.input.crew_smith_captain_use_case import SmithCaptainUseCase
 from apps.titanic.dependencies.crew_smith_captain_provider import get_smith_captain_use_case
@@ -18,13 +21,20 @@ from apps.titanic.dependencies.crew_smith_captain_provider import get_smith_capt
 logger = logging.getLogger("apps")
 smith_captain_router = APIRouter(prefix="/smith", tags=["smith"])
 
+@smith_captain_router.post("/chat", response_model=SmithCaptainChatResponseSchema)
+async def chat(
+    schema: Annotated[ChatSchema, Body()],
+    smith: SmithCaptainUseCase = Depends(get_smith_captain_use_case),
+) -> SmithCaptainChatResponseSchema:
+    return await smith.chat(schema)
+
 
 @smith_captain_router.get("/myself", response_model=SmithCaptainResponseSchema)
 async def introduce_myself(
     smith: SmithCaptainUseCase = Depends(get_smith_captain_use_case),
 ) -> SmithCaptainResponseSchema:
     result = await smith.introduce_myself(
-        SmithCaptainSchema(
+        ChatSchema(
             id=5,
             name="Edward Smith",
         )
