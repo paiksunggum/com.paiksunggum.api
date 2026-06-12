@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from apps.titanic.app.dtos.crew_james_command_dto import (
     BookingCommand,
+    JamesCommandQuery,
     JamesCommandResponse,
     PersonCommand,
 )
 from apps.titanic.app.ports.input.crew_james_command_use_case import JamesCommandUseCase
 from apps.titanic.app.ports.output.crew_james_repository import JamesRepository
-from ...adapter.inbound.api.schemas.crew_james_command_schema import JamesCommandSchema
-from apps.titanic.app.dtos.crew_james_command_dto import JamesCommandQuery
+
+if TYPE_CHECKING:
+    from apps.titanic.adapter.inbound.api.schemas.crew_james_command_schema import JamesCommandSchema
 
 class JamesCommandInteractor(JamesCommandUseCase):
     def __init__(self, repository: JamesRepository) -> None:

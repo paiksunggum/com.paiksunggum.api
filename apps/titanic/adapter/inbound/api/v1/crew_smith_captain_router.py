@@ -11,6 +11,7 @@ from apps.titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import (
 from apps.titanic.app.ports.input.crew_smith_captain_use_case import SmithCaptainUseCase
 from apps.titanic.dependencies.crew_smith_captain_provider import get_smith_captain_use_case
 
+
 '''
 스미스 선장 (Captain Edward John Smith)
 타이타닉의 총책임자. 침몰하는 배와 운명을 함께한 명장.
@@ -23,9 +24,10 @@ smith_captain_router = APIRouter(prefix="/smith", tags=["smith"])
 
 @smith_captain_router.post("/chat", response_model=SmithCaptainChatResponseSchema)
 async def chat(
-    schema: Annotated[ChatSchema, Body()],
+    schema: Annotated[SmithCaptainChatRequestSchema, Body()],
     smith: SmithCaptainUseCase = Depends(get_smith_captain_use_case),
 ) -> SmithCaptainChatResponseSchema:
+    print(f"[스미스 선장] 채팅 입력: {schema.message}", flush=True)
     return await smith.chat(schema)
 
 
