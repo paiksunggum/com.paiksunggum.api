@@ -1,6 +1,8 @@
 from __future__ import annotations
 import logging
 
+from fastapi import Depends
+
 from apps.chat.app.iris_model import IrisModel
 from apps.titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import (
     ChatSchema,
@@ -11,6 +13,7 @@ from apps.titanic.app.ports.input.crew_smith_captain_use_case import SmithCaptai
 from apps.titanic.app.ports.output.crew_smith_captain_repository import SmithCaptainRepository
 from apps.titanic.dependencies.passenger_jack_trainer_provider import get_jack_trainer_use_case
 from apps.titanic.dependencies.passenger_rose_model_provider import get_rose_model_use_case
+
 
 logger = logging.getLogger("apps")
 
@@ -46,7 +49,7 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
 
 
 
-    async def introduce_myself(self, schema: ChatSchema) -> SmithCaptainResponse:
+    async def introduce_myself(self, schema: SmithCaptainResponseSchema) -> SmithCaptainResponse:
         '''에드워드 스미스의 자기소개 인터렉트'''
 
         return await self.repository.introduce_myself(SmithCaptainQuery(
