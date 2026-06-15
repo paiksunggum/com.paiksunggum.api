@@ -8,18 +8,20 @@ DIP 원칙:
   - 세션은 core 의 get_db 에서 주입받는다 (AsyncSession).
 """
 from fastapi import Depends
-
 from core.matrix.oracle_database import get_db
-from apps.titanic.adapter.outbound.pg.crew_a_architect_pg_repository import (
-    AArchitectPgRepository,
-)
+from apps.titanic.adapter.outbound.pg.crew_a_architect_pg_repository import AArchitectPgRepository
 from apps.titanic.app.ports.input.crew_a_architect_use_case import AArchitectUseCase
 from apps.titanic.app.ports.output.crew_a_architect_repository import AArchitectRepository
 from apps.titanic.app.use_cases.crew_a_architect_interactor import AArchitectInteractor
 
+def get_a_architect_repository(
+        db: AsyncSession = Depends(get_db)
+) -> AArchitectRepository:
+
+    return AArchitectPgRepository(session=db)
 
 def get_a_architect_use_case(
-    db: AsyncSession = Depends(get_db),
+        repository : AArchitectRepository = Depends(get_a_architect_repository)
 ) -> AArchitectUseCase:
-    repository: AArchitectRepository = AArchitectPgRepository(session=db)
+    
     return AArchitectInteractor(repository=repository)

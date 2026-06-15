@@ -44,8 +44,10 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
                     jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case),
                     rose: RoseModelUseCase = Depends(get_rose_model_use_case)
                     ) -> SmithCaptainChatResult:
-    
-        return await self.repository.chat(schema.message)  
+        # schema 에 들어있는 messages 내용 보기
+        logger.info(f"[SmithCaptainInteractor] chat 진입 | schema={schema}")
+
+        return SmithCaptainChatResult(answer="1309명 입니다")
 
 
 

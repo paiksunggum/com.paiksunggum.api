@@ -18,8 +18,14 @@ from apps.titanic.app.ports.output.crew_andrew_blueprint_repository import Andre
 from apps.titanic.app.use_cases.crew_andrew_blueprint_interactor import AndrewBlueprintInteractor
 
 
+def get_andrew_blueprint_repository(
+        db: AsyncSession = Depends(get_db)
+) -> AndrewBlueprintRepository:
+
+    return AndrewBlueprintPgRepository(session=db)
+
 def get_andrew_blueprint_use_case(
-    db: AsyncSession = Depends(get_db),
+        repository: AndrewBlueprintRepository = Depends(get_andrew_blueprint_repository)
 ) -> AndrewBlueprintUseCase:
-    repository: AndrewBlueprintRepository = AndrewBlueprintPgRepository(session=db)
+
     return AndrewBlueprintInteractor(repository=repository)

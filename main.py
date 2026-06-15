@@ -38,6 +38,11 @@ from apps.chat.app.chat_page import chat_page_html
 from apps.chat.app.chloe_controller import ChloeController
 from apps.chat.app.schemas import ChatRequest, ChatResponse
 from apps.sports.app.forma_routes import router as forma_router
+from apps.admin.adapter.inbound.api.v1.sports_router import sports_router
+from apps.admin.adapter.inbound.api.v1.practice_router import practice_router
+from apps.admin.adapter.inbound.api.v1.ads_router import ads_router
+from apps.admin.adapter.inbound.api.v1.users_ad_router import users_ad_router
+from apps.admin.adapter.inbound.api.v1.ad_stats_daily_router import ad_stats_daily_router
 from apps.friday13th.adapter.inbound.api.schemas import InitDbResponse
 from apps.friday13th.adapter.inbound.api.v1.login_router import login_router
 from apps.friday13th.adapter.inbound.api.v1.signup_router import signup_router
@@ -72,6 +77,11 @@ app.include_router(forma_router)
 app.include_router(titanic_router)
 app.include_router(login_router)
 app.include_router(signup_router)
+app.include_router(sports_router)
+app.include_router(practice_router)
+app.include_router(ads_router)
+app.include_router(users_ad_router)
+app.include_router(ad_stats_daily_router)
 
 app.add_middleware(
     CORSMiddleware,

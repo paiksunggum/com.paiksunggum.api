@@ -18,8 +18,14 @@ from apps.titanic.app.ports.output.passenger_jack_trainer_repository import Jack
 from apps.titanic.app.use_cases.passenger_jack_trainer_interactor import JackTrainerInteractor
 
 
+def get_jack_trainer_repository(
+        db: AsyncSession = Depends(get_db)
+) -> JackTrainerRepository:
+
+    return JackTrainerPgRepository(session=db)
+
 def get_jack_trainer_use_case(
-    db: AsyncSession = Depends(get_db),
+        repository: JackTrainerRepository = Depends(get_jack_trainer_repository)
 ) -> JackTrainerUseCase:
-    repository: JackTrainerRepository = JackTrainerPgRepository(session=db)
+
     return JackTrainerInteractor(repository=repository)

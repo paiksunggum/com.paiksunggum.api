@@ -10,6 +10,10 @@ from apps.titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import (
 )
 from apps.titanic.app.ports.input.crew_smith_captain_use_case import SmithCaptainUseCase
 from apps.titanic.dependencies.crew_smith_captain_provider import get_smith_captain_use_case
+from apps.titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
+from apps.titanic.app.ports.input.passenger_rose_model_use_case import RoseModelUseCase
+from apps.titanic.dependencies.passenger_jack_trainer_provider import get_jack_trainer_use_case
+from apps.titanic.dependencies.passenger_rose_model_provider import get_rose_model_use_case
 
 
 '''
@@ -26,9 +30,11 @@ smith_captain_router = APIRouter(prefix="/smith", tags=["smith"])
 async def chat(
     schema: Annotated[SmithCaptainChatRequestSchema, Body()],
     smith: SmithCaptainUseCase = Depends(get_smith_captain_use_case),
+    jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case),
+    rose: RoseModelUseCase = Depends(get_rose_model_use_case)
 ) -> SmithCaptainChatResponseSchema:
     print(f"[스미스 선장] 채팅 입력: {schema.message}", flush=True)
-    return await smith.chat(schema)
+    return await smith.chat(schema, jack, rose)
 
 
 @smith_captain_router.get("/myself", response_model=SmithCaptainResponseSchema)

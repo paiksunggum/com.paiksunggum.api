@@ -18,8 +18,14 @@ from apps.titanic.app.ports.output.crew_smith_captain_repository import SmithCap
 from apps.titanic.app.use_cases.crew_smith_captain_interactor import SmithCaptainInteractor
 
 
+def get_smith_captain_repository(
+        db: AsyncSession = Depends(get_db)
+) -> SmithCaptainRepository:
+
+    return SmithCaptainPgRepository(session=db)
+
 def get_smith_captain_use_case(
-    db: AsyncSession = Depends(get_db),
+        repository: SmithCaptainRepository = Depends(get_smith_captain_repository)
 ) -> SmithCaptainUseCase:
-    repository: SmithCaptainRepository = SmithCaptainPgRepository(session=db)
+
     return SmithCaptainInteractor(repository=repository)

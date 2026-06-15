@@ -18,8 +18,14 @@ from apps.titanic.app.ports.output.crew_hartley_violin_repository import Hartley
 from apps.titanic.app.use_cases.crew_hartley_violin_interactor import HartleyViolinInteractor
 
 
+def get_hartley_violin_repository(
+        db: AsyncSession = Depends(get_db)
+) -> HartleyViolinRepository:
+
+    return HartleyViolinPgRepository(session=db)
+
 def get_hartley_violin_use_case(
-    db: AsyncSession = Depends(get_db),
+        repository: HartleyViolinRepository = Depends(get_hartley_violin_repository)
 ) -> HartleyViolinUseCase:
-    repository: HartleyViolinRepository = HartleyViolinPgRepository(session=db)
+
     return HartleyViolinInteractor(repository=repository)

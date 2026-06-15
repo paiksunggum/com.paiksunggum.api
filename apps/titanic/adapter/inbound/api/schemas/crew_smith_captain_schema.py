@@ -18,6 +18,7 @@ class ChatSchema(BaseModel):
             "example": {
                 "id": 5,
                 "name": "Edward Smith",
+                "messages": "탑승객이 몇 명이야?",
             }
         }
     }

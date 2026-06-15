@@ -1,24 +1,9 @@
-from datetime import date
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.matrix.oracle_database import get_db
 
-from apps.admin.app.controllers.ad_stats_daily_controller import AdStatsDailyController
-from apps.admin.app.controllers.ads_controller import AdsController
-from apps.admin.app.controllers.practice_controller import PracticeController
-from apps.admin.app.controllers.sports_controller import SportsController
-from apps.admin.app.controllers.users_ad_controller import UsersAdController
-from apps.admin.app.schemas.ad_stats_daily_schema import (
-    AdStatsDailyNestedCreateRequest,
-    AdStatsDailyResponse,
-)
-from apps.admin.app.schemas.ads_schema import AdCreateRequest, AdResponse
-from apps.admin.app.schemas.practice_schema import PracticeCreateRequest, PracticeResponse
-from apps.admin.app.schemas.sports_schema import SportCreateRequest, SportResponse
-from apps.admin.app.schemas.users_ad_schema import UsersAdNestedCreateRequest, UsersAdResponse
 from apps.vision.app.controllers.analysis_history_controller import AnalysisHistoryController
 from apps.vision.app.controllers.feedback_comments_controller import FeedbackCommentController
 from apps.vision.app.controllers.feedback_controller import FeedbackController
@@ -99,51 +84,6 @@ async def forma_create_user(
     except SQLAlchemyError as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e.orig or e)) from e
-
-
-# --- Sports master ---
-
-
-@router.get("/sports", response_model=list[SportResponse])
-async def forma_list_sports(db: AsyncSession = Depends(get_db)):
-    rows = await SportsController(db).list_sports()
-    return [SportResponse.model_validate(r) for r in rows]
-
-
-@router.post("/sports", response_model=SportResponse)
-async def forma_create_sport(
-    req: SportCreateRequest, db: AsyncSession = Depends(get_db)
-):
-    try:
-        row = await SportsController(db).create_sport(req)
-        return SportResponse.model_validate(row)
-    except IntegrityError:
-        await db.rollback()
-        raise _integrity("중복되었거나 제약 조건 위반입니다.") from None
-
-
-# --- Practice catalog ---
-
-
-@router.get("/practices", response_model=list[PracticeResponse])
-async def forma_list_practices(
-    sport_id: int | None = Query(default=None),
-    db: AsyncSession = Depends(get_db),
-):
-    rows = await PracticeController(db).list_practices(sport_id)
-    return [PracticeResponse.model_validate(r) for r in rows]
-
-
-@router.post("/practices", response_model=PracticeResponse)
-async def forma_create_practice(
-    req: PracticeCreateRequest, db: AsyncSession = Depends(get_db)
-):
-    try:
-        row = await PracticeController(db).create_practice(req)
-        return PracticeResponse.model_validate(row)
-    except IntegrityError:
-        await db.rollback()
-        raise _integrity("참조 sports id가 없거나 제약 조건 위반입니다.") from None
 
 
 # --- Videos ---
@@ -430,37 +370,7 @@ async def forma_create_payment_log(
         raise _integrity("참조 subscription/user id가 없거나 제약 조건 위반입니다.") from None
 
 
-# --- Ads ---
-
-
-@router.get("/ads", response_model=list[AdResponse])
-async def forma_list_ads(db: AsyncSession = Depends(get_db)):
-    rows = await AdsController(db).list_ads()
-    return [AdResponse.model_validate(r) for r in rows]
-
-
-@router.post("/ads", response_model=AdResponse)
-async def forma_create_ad(req: AdCreateRequest, db: AsyncSession = Depends(get_db)):
-    try:
-        row = await AdsController(db).create_ad(req)
-        return AdResponse.model_validate(row)
-    except IntegrityError:
-        await db.rollback()
-        raise _integrity() from None
-
-
-@router.post("/users/{user_id}/ad-contracts", response_model=UsersAdResponse)
-async def forma_create_users_ad(
-    user_id: int,
-    req: UsersAdNestedCreateRequest,
-    db: AsyncSession = Depends(get_db),
-):
-    try:
-        row = await UsersAdController(db).create_contract(user_id, req)
-        return UsersAdResponse.model_validate(row)
-    except IntegrityError:
-        await db.rollback()
-        raise _integrity("참조 user/ad id가 없거나 제약 조건 위반입니다.") from None
+# --- Ad exposures (nested under video) ---
 
 
 @router.post(
@@ -478,34 +388,3 @@ async def forma_record_ad_exposure(
     except IntegrityError:
         await db.rollback()
         raise _integrity("참조 video/ad id가 없거나 제약 조건 위반입니다.") from None
-
-
-@router.get(
-    "/ads/{ad_id}/stats/daily",
-    response_model=list[AdStatsDailyResponse],
-)
-async def forma_list_ad_stats_daily(
-    ad_id: int,
-    from_date: date | None = Query(default=None, alias="from"),
-    to_date: date | None = Query(default=None, alias="to"),
-    db: AsyncSession = Depends(get_db),
-):
-    rows = await AdStatsDailyController(db).list_for_ad(ad_id, from_date, to_date)
-    return [AdStatsDailyResponse.model_validate(r) for r in rows]
-
-
-@router.post(
-    "/ads/{ad_id}/stats/daily",
-    response_model=AdStatsDailyResponse,
-)
-async def forma_create_ad_stats_daily(
-    ad_id: int,
-    req: AdStatsDailyNestedCreateRequest,
-    db: AsyncSession = Depends(get_db),
-):
-    try:
-        row = await AdStatsDailyController(db).create_for_ad(ad_id, req)
-        return AdStatsDailyResponse.model_validate(row)
-    except IntegrityError:
-        await db.rollback()
-        raise _integrity("참조 ad id가 없거나 제약 조건 위반입니다.") from None
