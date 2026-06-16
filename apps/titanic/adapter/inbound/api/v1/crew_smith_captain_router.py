@@ -29,12 +29,10 @@ smith_captain_router = APIRouter(prefix="/smith", tags=["smith"])
 @smith_captain_router.post("/chat", response_model=SmithCaptainChatResponseSchema)
 async def chat(
     schema: Annotated[SmithCaptainChatRequestSchema, Body()],
-    smith: SmithCaptainUseCase = Depends(get_smith_captain_use_case),
-    jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case),
-    rose: RoseModelUseCase = Depends(get_rose_model_use_case)
+    smith: SmithCaptainUseCase = Depends(get_smith_captain_use_case)
 ) -> SmithCaptainChatResponseSchema:
     print(f"[스미스 선장] 채팅 입력: {schema.message}", flush=True)
-    return await smith.chat(schema, jack, rose)
+    return await smith.chat(schema)
 
 
 @smith_captain_router.get("/myself", response_model=SmithCaptainResponseSchema)

@@ -19,9 +19,6 @@ class SmithCaptainUseCase(ABC):
         pass
 
     @abstractmethod
-    async def chat(self, schema: ChatSchema, 
-                    jack: JackTrainerUseCase,
-                    rose: RoseModelUseCase
-                    ) -> SmithCaptainChatResult:
+    async def chat(self, schema: ChatSchema) -> SmithCaptainChatResult:
         '''스미스 선장과의 채팅'''
         pass

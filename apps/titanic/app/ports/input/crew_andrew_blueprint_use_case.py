@@ -10,3 +10,13 @@ class AndrewBlueprintUseCase(ABC):
         schema: AndrewBlueprintSchema,
     ) -> AndrewBlueprintResponse:
         pass
+
+    @abstractmethod
+    async def get_train_set(self) -> AndrewBlueprintResponse:
+        '''앤드류가 DB에서 train set 만 가져오는 메소드'''
+        pass
+
+    @abstractmethod
+    async def get_test_set(self) -> AndrewBlueprintResponse:
+        '''앤드류의 자기소개 메소드'''
+        pass

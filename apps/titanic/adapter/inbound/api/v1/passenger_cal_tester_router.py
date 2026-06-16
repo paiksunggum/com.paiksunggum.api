@@ -6,7 +6,9 @@ from apps.titanic.adapter.inbound.api.schemas.passenger_cal_tester_schema import
     CalTesterSchema,
 )
 from apps.titanic.app.ports.input.passenger_cal_tester_use_case import CalTesterUseCase
+from apps.titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
 from apps.titanic.dependencies.passenger_cal_tester_provider import get_cal_tester_use_case
+from apps.titanic.dependencies.passenger_jack_trainer_provider import get_jack_trainer_use_case
 
 '''
 칼 캘던 하클리 (Caledon Hockley)
@@ -29,3 +31,12 @@ async def introduce_myself(
         )
     )
     return CalTesterResponseSchema(id=result.id, name=result.name)
+
+
+@cal_tester_router.get("/rank")
+async def get_model_rank(
+    jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case),
+    cal: CalTesterUseCase = Depends(get_cal_tester_use_case),
+) -> dict:
+    train_results = await jack.train_model(None)
+    return await cal.test_model(train_results)

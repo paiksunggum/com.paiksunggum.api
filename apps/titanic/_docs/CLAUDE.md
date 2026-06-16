@@ -47,3 +47,12 @@
 2. 헥사고날(복잡 도메인) vs 계층형(단순 CRUD) 중 선택한다.
 3. `paik/main.py`에 라우터를 마운트한다 (`prefix` 없이 — titanic_router 자체에 prefix 포함).
 4. 캐릭터 이름 네이밍을 새 도메인에 맞게 정한다.
+
+## 타이타닉 도메인 문서 연결 :
+
+*타이타닉 도메인 문서 연결
+타이타닉 피처 정리 : [[titanic-features]]
+타이타닉 머신러닝 : [[titanic-machine-learning]]
+타이타닉 ERD : [[TITANIC-ERD]]
+타이타닉 NF : [[titanic-nf]]
+타이타닉 알고리즘 : [[titanic-algorithm]]
