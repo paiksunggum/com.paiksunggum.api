@@ -47,13 +47,19 @@ _CAPTAIN_PERSONA = [
 
 class SmithCaptainInteractor(SmithCaptainUseCase):
 
-    def __init__(self, repository: SmithCaptainRepository):
+    def __init__(
+        self,
+        repository: SmithCaptainRepository,
+        jack: JackTrainerUseCase,
+        rose: RoseModelUseCase,
+        cal: CalTesterUseCase,
+        andrew: AndrewBlueprintUseCase,
+    ):
         self.repository = repository
-        self.jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case)
-        self.rose: RoseModelUseCase = Depends(get_rose_model_use_case)
-        self.cal: CalTesterUseCase = Depends(get_cal_tester_use_case)
-        self.andrew: AndrewBlueprint = Depends(get_andrew_blueprint_use_case)
-        
+        self.jack = jack
+        self.rose = rose
+        self.cal = cal
+        self.andrew = andrew
 
     async def chat(self, schema: ChatSchema) -> SmithCaptainChatResult:
         # schema 에 들어있는 messages 내용 보기

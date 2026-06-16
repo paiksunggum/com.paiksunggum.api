@@ -16,6 +16,14 @@ from apps.titanic.adapter.outbound.pg.crew_smith_captain_pg_repository import (
 from apps.titanic.app.ports.input.crew_smith_captain_use_case import SmithCaptainUseCase
 from apps.titanic.app.ports.output.crew_smith_captain_repository import SmithCaptainRepository
 from apps.titanic.app.use_cases.crew_smith_captain_interactor import SmithCaptainInteractor
+from apps.titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
+from apps.titanic.app.ports.input.passenger_rose_model_use_case import RoseModelUseCase
+from apps.titanic.app.ports.input.passenger_cal_tester_use_case import CalTesterUseCase
+from apps.titanic.app.ports.input.crew_andrew_blueprint_use_case import AndrewBlueprintUseCase
+from apps.titanic.dependencies.passenger_jack_trainer_provider import get_jack_trainer_use_case
+from apps.titanic.dependencies.passenger_rose_model_provider import get_rose_model_use_case
+from apps.titanic.dependencies.passenger_cal_tester_provider import get_cal_tester_use_case
+from apps.titanic.dependencies.crew_andrew_blueprint_provider import get_andrew_blueprint_use_case
 
 
 def get_smith_captain_repository(
@@ -25,7 +33,17 @@ def get_smith_captain_repository(
     return SmithCaptainPgRepository(session=db)
 
 def get_smith_captain_use_case(
-        repository: SmithCaptainRepository = Depends(get_smith_captain_repository)
+        repository: SmithCaptainRepository = Depends(get_smith_captain_repository),
+        jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case),
+        rose: RoseModelUseCase = Depends(get_rose_model_use_case),
+        cal: CalTesterUseCase = Depends(get_cal_tester_use_case),
+        andrew: AndrewBlueprintUseCase = Depends(get_andrew_blueprint_use_case),
 ) -> SmithCaptainUseCase:
 
-    return SmithCaptainInteractor(repository=repository)
+    return SmithCaptainInteractor(
+        repository=repository,
+        jack=jack,
+        rose=rose,
+        cal=cal,
+        andrew=andrew,
+    )
