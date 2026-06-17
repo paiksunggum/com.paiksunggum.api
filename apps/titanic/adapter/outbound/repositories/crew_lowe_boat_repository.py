@@ -1,12 +1,12 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.titanic.app.dtos.crew_lowe_boat_dto import LoweBoatQuery, LoweBoatResponse
-from apps.titanic.app.ports.output.crew_lowe_boat_repository import LoweBoatRepository
+from apps.titanic.app.ports.output.crew_lowe_boat_port import LoweBoatPort
 
 
-class LoweBoatPgRepository(LoweBoatRepository):
+class LoweBoatRepository(LoweBoatPort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 

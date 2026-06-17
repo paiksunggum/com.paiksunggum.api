@@ -35,4 +35,4 @@ async def introduce_myself(
 async def get_model_train(
     jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case),
 ) -> dict:
-    return await jack.train_model(None)
+    return jack.train_model(None)

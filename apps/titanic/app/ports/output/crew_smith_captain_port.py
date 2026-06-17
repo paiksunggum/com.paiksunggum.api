@@ -5,7 +5,7 @@ from typing import Any
 
 from apps.titanic.app.dtos.crew_smith_captain_dto import SmithCaptainQuery, SmithCaptainResponse, SmithCaptainChatResult
 
-class SmithCaptainRepository(ABC):
+class SmithCaptainPort(ABC):
 
     @abstractmethod
     async def introduce_myself(self, query: SmithCaptainQuery) -> SmithCaptainResponse:

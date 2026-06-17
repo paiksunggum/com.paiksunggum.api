@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from typing import Any
 
@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerORM
 from apps.chat.app.iris_model import IrisModel
 from apps.titanic.app.dtos.crew_smith_captain_dto import SmithCaptainQuery, SmithCaptainResponse, SmithCaptainChatResult
-from apps.titanic.app.ports.output.crew_smith_captain_repository import SmithCaptainRepository
+from apps.titanic.app.ports.output.crew_smith_captain_port import SmithCaptainPort
 
 _CAPTAIN_PERSONA = [
     {
@@ -28,7 +28,7 @@ _CAPTAIN_PERSONA = [
 ]
 
 
-class SmithCaptainPgRepository(SmithCaptainRepository):
+class SmithCaptainRepository(SmithCaptainPort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 

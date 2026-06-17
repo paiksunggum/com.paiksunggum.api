@@ -13,3 +13,13 @@ class AArchitectUseCase(ABC):
     async def introduce_myself(self, schema: AArchitectSchema) -> AArchitectResponse:
         '''토마스 에이 아키텍트의 자기소개 메소드'''
         pass
+
+    @abstractmethod
+    def analyze_intent(self, question: str) -> dict[str, Any]:
+        '''Kiwi 형태소 분석으로 프론트 질문의 의도를 파악하는 추상 메소드'''
+        pass
+
+
+
+
+

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from typing import Any
 
@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apps.titanic.adapter.outbound.orm.passenger_rose_model_orm import RoseModelORM
 from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerORM
 from apps.titanic.app.dtos.passenger_jack_trainer_dto import JackTrainerQuery, JackTrainerResponse
-from apps.titanic.app.ports.output.passenger_jack_trainer_repository import JackTrainerRepository
+from apps.titanic.app.ports.output.passenger_jack_trainer_port import JackTrainerPort
 
 
-class JackTrainerPgRepository(JackTrainerRepository):
+class JackTrainerRepository(JackTrainerPort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 

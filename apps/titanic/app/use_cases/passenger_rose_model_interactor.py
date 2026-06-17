@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import logging
 
 from apps.titanic.adapter.inbound.api.schemas.passenger_rose_model_schema import RoseModelSchema
@@ -9,7 +9,7 @@ from apps.titanic.app.ports.input.passenger_rose_model_use_case import (
     RoseModelUseCase,
     SurvivalPredictionStrategy,
 )
-from apps.titanic.app.ports.output.passenger_rose_model_repository import RoseModelRepository
+from apps.titanic.app.ports.output.passenger_rose_model_port import RoseModelPort
 
 logger = logging.getLogger("apps")
 
@@ -248,9 +248,13 @@ class KMeansPCAStrategy(SurvivalPredictionStrategy):
 
 class RoseModelInteractor(RoseModelUseCase):
 
-    def __init__(self, repository: RoseModelRepository, strategy: SurvivalPredictionStrategy):
+    def __init__(
+        self,
+        repository: RoseModelPort,
+        strategy: SurvivalPredictionStrategy | None = None,
+    ):
         self.repository = repository
-        self.strategy = strategy
+        self.strategy = strategy or LogisticRegressionStrategy()
 
     async def introduce_myself(self, schema: RoseModelSchema) -> RoseModelResponse:
         return await self.repository.introduce_myself(RoseModelQuery(

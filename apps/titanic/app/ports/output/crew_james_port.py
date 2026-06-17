@@ -6,7 +6,7 @@ from typing import Any
 from apps.titanic.app.dtos.crew_james_command_dto import BookingCommand, PersonCommand
 
 
-class JamesRepository(ABC):
+class JamesPort(ABC):
     @abstractmethod
     async def upload_passengers(
         person_commands: list[PersonCommand],

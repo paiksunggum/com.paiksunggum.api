@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import logging
 from typing import Any
 
@@ -8,7 +8,7 @@ from apps.titanic.adapter.inbound.api.schemas.passenger_jack_trainer_schema impo
 from apps.titanic.app.dtos.passenger_jack_trainer_dto import JackTrainerQuery, JackTrainerResponse
 from apps.titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
 from apps.titanic.app.ports.input.passenger_rose_model_use_case import PredictionFeatures
-from apps.titanic.app.ports.output.passenger_jack_trainer_repository import JackTrainerRepository
+from apps.titanic.app.ports.output.passenger_jack_trainer_port import JackTrainerPort
 from apps.titanic.app.use_cases.passenger_rose_model_interactor import (
     LogisticRegressionStrategy,
     RandomForestStrategy,
@@ -41,12 +41,34 @@ _TRAIN_DATA: list[tuple[PredictionFeatures, bool]] = [
 
 class JackTrainerInteractor(JackTrainerUseCase):
 
-    def __init__(self, repository: JackTrainerRepository):
+    def __init__(self, repository: JackTrainerPort):
         self.repository = repository
         self.kiwi = Kiwi()
 
-    async def train_model(self, train_set) -> JackTrainerResponse:
+    def train_model(self, train_set) -> JackTrainerResponse:
         '''로즈가 제안한 모델들을 훈련시키는 메소드'''
+        data: list[tuple[PredictionFeatures, bool]] = []
+        if train_set:
+            for row in train_set:
+                try:
+                    data.append((
+                        PredictionFeatures(
+                            pclass=int(row["pclass"] or 3),
+                            sex=row["gender"] or "male",
+                            age=float(row["age"] or 30.0),
+                            sibsp=int(row["sibsp"] or 0),
+                            parch=int(row["parch"] or 0),
+                            fare=float(row["fare"] or 0.0),
+                            embarked=row["embarked"] or "S",
+                        ),
+                        row["survived"] == "1",
+                    ))
+                except (TypeError, ValueError):
+                    continue
+
+        if not data:
+            data = _TRAIN_DATA
+
         strategies = [
             LogisticRegressionStrategy(),
             RandomForestStrategy(),
@@ -63,18 +85,18 @@ class JackTrainerInteractor(JackTrainerUseCase):
         results: dict[str, Any] = {}
         for strategy in strategies:
             correct = sum(
-                1 for features, actual in _TRAIN_DATA
+                1 for features, actual in data
                 if strategy.predict(features).survived == actual
             )
-            accuracy = correct / len(_TRAIN_DATA)
+            accuracy = correct / len(data)
             results[strategy.name] = {
                 "accuracy": round(accuracy, 4),
                 "correct": correct,
-                "total": len(_TRAIN_DATA),
+                "total": len(data),
             }
             logger.info(
                 "JackTrainerInteractor: %s accuracy=%.4f (%d/%d)",
-                strategy.name, accuracy, correct, len(_TRAIN_DATA),
+                strategy.name, accuracy, correct, len(data),
             )
 
         return results

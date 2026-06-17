@@ -38,5 +38,5 @@ async def get_model_rank(
     jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case),
     cal: CalTesterUseCase = Depends(get_cal_tester_use_case),
 ) -> dict:
-    train_results = await jack.train_model(None)
-    return await cal.test_model(train_results)
+    train_results = jack.train_model(None)
+    return cal.test_model(train_results)

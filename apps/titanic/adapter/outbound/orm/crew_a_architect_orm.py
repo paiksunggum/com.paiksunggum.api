@@ -9,3 +9,4 @@ class AArchitectORM(TheOneBase):
     # 이 한줄이 들어가면 pass와 동일하게 
 
     __abstract__ = True
+

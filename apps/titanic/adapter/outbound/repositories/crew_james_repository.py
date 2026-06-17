@@ -1,17 +1,17 @@
-import logging
+﻿import logging
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ....app.dtos.crew_james_command_dto import BookingCommand, JamesCommandQuery, JamesCommandResponse, PersonCommand
-from ....app.ports.output.crew_james_repository import JamesRepository
+from ....app.ports.output.crew_james_port import JamesPort
 from ..orm.passenger_rose_model_orm import RoseModelORM
 from ..orm.passenger_jack_trainer_orm import JackTrainerORM
 
 logger = logging.getLogger("apps")
 
 
-class JamesPgRepository(JamesRepository):
+class JamesRepository(JamesPort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
@@ -19,7 +19,7 @@ class JamesPgRepository(JamesRepository):
 
         '''제임스 감독의 자기 소개 레포지토리 구현 메소드'''
 
-        logger.info(f"[JamesPgRepository] introduce_myself 진입 | request_data={query}")
+        logger.info(f"[JamesRepository] introduce_myself 진입 | request_data={query}")
 
         response: JamesCommandResponse = JamesCommandResponse(
             id= query.id * 10000,
@@ -50,7 +50,7 @@ class JamesPgRepository(JamesRepository):
         ]
 
         if not new_pairs:
-            logger.info("[JamesPgRepository] 신규 승객 없음 | 저장=0행")
+            logger.info("[JamesRepository] 신규 승객 없음 | 저장=0행")
             return 0
 
         new_persons, new_bookings = zip(*new_pairs)
@@ -86,5 +86,5 @@ class JamesPgRepository(JamesRepository):
         ])
         await self.session.commit()
 
-        logger.info("[JamesPgRepository] upload_passengers 완료 | 저장=%d행", len(new_pairs))
+        logger.info("[JamesRepository] upload_passengers 완료 | 저장=%d행", len(new_pairs))
         return len(new_pairs)

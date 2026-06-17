@@ -1,12 +1,12 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.titanic.app.dtos.crew_hartley_violin_dto import HartleyViolinQuery, HartleyViolinResponse
-from apps.titanic.app.ports.output.crew_hartley_violin_repository import HartleyViolinRepository
+from apps.titanic.app.ports.output.crew_hartley_violin_port import HartleyViolinPort
 
 
-class HartleyViolinPgRepository(HartleyViolinRepository):
+class HartleyViolinRepository(HartleyViolinPort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 

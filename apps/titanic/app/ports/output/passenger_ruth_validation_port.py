@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from apps.titanic.app.dtos.passenger_ruth_validation_dto import RuthValidationQuery, RuthValidationResponse
 
 
-class RuthValidationRepository(ABC):
+class RuthValidationPort(ABC):
 
     @abstractmethod
     async def introduce_myself(

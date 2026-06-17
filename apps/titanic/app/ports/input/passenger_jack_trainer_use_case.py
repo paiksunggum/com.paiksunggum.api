@@ -15,6 +15,6 @@ class JackTrainerUseCase(ABC):
         pass
 
     @abstractmethod
-    async def train_model(self, train_set) -> JackTrainerResponse:
+    def train_model(self, train_set) -> JackTrainerResponse:
         '''로즈가 제안한 모델들을 훈련시키는 메소드'''
         pass

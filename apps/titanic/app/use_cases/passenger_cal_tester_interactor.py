@@ -1,21 +1,21 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import logging
 from typing import Any
 
 from apps.titanic.adapter.inbound.api.schemas.passenger_cal_tester_schema import CalTesterSchema
 from apps.titanic.app.dtos.passenger_cal_tester_dto import CalTesterQuery, CalTesterResponse
 from apps.titanic.app.ports.input.passenger_cal_tester_use_case import CalTesterUseCase
-from apps.titanic.app.ports.output.passenger_cal_tester_repository import CalTestRepository
+from apps.titanic.app.ports.output.passenger_cal_tester_port import CalTestPort
 
 logger = logging.getLogger("apps")
 
 
 class CalTesterInteractor(CalTesterUseCase):
 
-    def __init__(self, repository: CalTestRepository):
+    def __init__(self, repository: CalTestPort):
         self.repository = repository
 
-    async def test_model(self, test_set) -> CalTesterResponse:
+    def test_model(self, test_set) -> CalTesterResponse:
         '''칼이 로즈가 제안한 10개 모델의 트레이닝 정도를 점수화 해서 1등을 뽑는 것'''
         best_name, best_metrics = max(
             test_set.items(),

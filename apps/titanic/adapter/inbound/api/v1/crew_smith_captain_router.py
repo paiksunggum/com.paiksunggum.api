@@ -45,4 +45,6 @@ async def introduce_myself(
             name="Edward Smith",
         )
     )
+
+    
     return SmithCaptainResponseSchema(id=result.id, name=result.name)

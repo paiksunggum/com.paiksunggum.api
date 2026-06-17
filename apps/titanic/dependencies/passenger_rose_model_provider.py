@@ -1,31 +1,31 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+﻿from sqlalchemy.ext.asyncio import AsyncSession
 """
 RoseModel 의존성 조립소 (DIP 팩토리).
 
 DIP 원칙:
-  - 라우터는 구현체(RoseModelPgRepository)를 직접 알지 못한다.
+  - 라우터는 구현체(RoseModelRepository)를 직접 알지 못한다.
   - 리턴 타입은 구현체가 아닌 포트(RoseModelUseCase)로 선언한다.
   - 세션은 core 의 get_db 에서 주입받는다 (AsyncSession).
 """
 from fastapi import Depends
 
 from core.matrix.oracle_database import get_db
-from apps.titanic.adapter.outbound.pg.passenger_rose_model_pg_repository import (
-    RoseModelPgRepository,
+from apps.titanic.adapter.outbound.repositories.passenger_rose_model_repository import (
+    RoseModelRepository,
 )
 from apps.titanic.app.ports.input.passenger_rose_model_use_case import RoseModelUseCase
-from apps.titanic.app.ports.output.passenger_rose_model_repository import RoseModelRepository
+from apps.titanic.app.ports.output.passenger_rose_model_port import RoseModelPort
 from apps.titanic.app.use_cases.passenger_rose_model_interactor import RoseModelInteractor
 
 
 def get_rose_model_repository(
         db: AsyncSession = Depends(get_db)
-) -> RoseModelRepository:
+) -> RoseModelPort:
 
-    return RoseModelPgRepository(session=db)
+    return RoseModelRepository(session=db)
 
 def get_rose_model_use_case(
-        repository: RoseModelRepository = Depends(get_rose_model_repository)
+        repository: RoseModelPort = Depends(get_rose_model_repository)
 ) -> RoseModelUseCase:
 
     return RoseModelInteractor(repository=repository)
