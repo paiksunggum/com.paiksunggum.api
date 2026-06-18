@@ -26,6 +26,10 @@ from apps.titanic.dependencies.passenger_cal_tester_provider import get_cal_test
 from apps.titanic.dependencies.crew_andrew_blueprint_provider import get_andrew_blueprint_use_case
 from apps.titanic.dependencies.crew_a_architect_provider import get_a_architect_use_case
 from apps.titanic.app.ports.input.crew_a_architect_use_case import AArchitectUseCase
+from apps.titanic.app.ports.input.crew_lowe_boat_use_case import LoweBoatUseCase
+from apps.titanic.dependencies.crew_lowe_boat_provider import get_lowe_boat_use_case
+from apps.titanic.app.ports.input.crew_hartley_violin_use_case import HartleyViolinUseCase
+from apps.titanic.dependencies.crew_hartley_violin_provider import get_hartley_violin_use_case
 
 
 def get_smith_captain_repository(
@@ -41,6 +45,8 @@ def get_smith_captain_use_case(
         rose: RoseModelUseCase = Depends(get_rose_model_use_case),
         cal: CalTesterUseCase = Depends(get_cal_tester_use_case),
         andrew: AndrewBlueprintUseCase = Depends(get_andrew_blueprint_use_case),
+        lowe: LoweBoatUseCase = Depends(get_lowe_boat_use_case),
+        hartley: HartleyViolinUseCase = Depends(get_hartley_violin_use_case),
 ) -> SmithCaptainUseCase:
 
     return SmithCaptainInteractor(
@@ -50,4 +56,6 @@ def get_smith_captain_use_case(
         rose=rose,
         cal=cal,
         andrew=andrew,
+        lowe=lowe,
+        hartley=hartley,
     )

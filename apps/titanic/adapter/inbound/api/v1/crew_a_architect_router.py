@@ -31,5 +31,3 @@ async def introduce_myself(
             name="Thomas A")
     )
 
-
-\

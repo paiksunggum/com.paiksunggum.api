@@ -1,42 +1,28 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 import logging
 from typing import Any
 
+import pandas as pd
 from kiwipiepy import Kiwi
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 
 from apps.titanic.adapter.inbound.api.schemas.passenger_jack_trainer_schema import JackTrainerSchema
 from apps.titanic.app.dtos.passenger_jack_trainer_dto import JackTrainerQuery, JackTrainerResponse
 from apps.titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
-from apps.titanic.app.ports.input.passenger_rose_model_use_case import PredictionFeatures
 from apps.titanic.app.ports.output.passenger_jack_trainer_port import JackTrainerPort
 from apps.titanic.app.use_cases.passenger_rose_model_interactor import (
     LogisticRegressionStrategy,
     RandomForestStrategy,
     XGBoostStrategy,
     LightGBMStrategy,
-    CatBoostStrategy,
     DecisionTreeStrategy,
     SVMStrategy,
     KNNStrategy,
     NaiveBayesStrategy,
-    KMeansPCAStrategy,
+    VotingEnsembleStrategy,
 )
 
 logger = logging.getLogger("apps")
-
-# 실제 타이타닉 생존/사망 레이블이 있는 샘플 훈련 데이터
-_TRAIN_DATA: list[tuple[PredictionFeatures, bool]] = [
-    (PredictionFeatures(1, "female", 29.0, 0, 0, 211.30, "C"), True),   # 1등석 여성 — 생존
-    (PredictionFeatures(1, "male",    2.0, 1, 2, 151.55, "S"), True),   # 유아 — 생존
-    (PredictionFeatures(3, "male",   22.0, 1, 0,   7.25, "S"), False),  # Jack — 사망
-    (PredictionFeatures(1, "female", 17.0, 1, 2, 151.55, "S"), True),   # Rose — 생존
-    (PredictionFeatures(3, "male",   35.0, 0, 0,   8.05, "S"), False),  # 3등석 남성 — 사망
-    (PredictionFeatures(2, "female", 14.0, 1, 0,  30.07, "S"), True),   # 2등석 여성 — 생존
-    (PredictionFeatures(3, "female", 26.0, 0, 0,   7.92, "S"), False),  # 3등석 여성 — 사망
-    (PredictionFeatures(1, "male",   54.0, 0, 0,  51.86, "S"), False),  # 1등석 중년남 — 사망
-    (PredictionFeatures(3, "male",    8.0, 3, 1,  21.07, "S"), False),  # 3등석 아이 — 사망
-    (PredictionFeatures(2, "female", 30.0, 0, 0,  13.00, "S"), True),   # 2등석 여성 — 생존
-]
 
 
 class JackTrainerInteractor(JackTrainerUseCase):
@@ -45,58 +31,46 @@ class JackTrainerInteractor(JackTrainerUseCase):
         self.repository = repository
         self.kiwi = Kiwi()
 
-    def train_model(self, train_set) -> JackTrainerResponse:
-        '''로즈가 제안한 모델들을 훈련시키는 메소드'''
-        data: list[tuple[PredictionFeatures, bool]] = []
-        if train_set:
-            for row in train_set:
-                try:
-                    data.append((
-                        PredictionFeatures(
-                            pclass=int(row["pclass"] or 3),
-                            sex=row["gender"] or "male",
-                            age=float(row["age"] or 30.0),
-                            sibsp=int(row["sibsp"] or 0),
-                            parch=int(row["parch"] or 0),
-                            fare=float(row["fare"] or 0.0),
-                            embarked=row["embarked"] or "S",
-                        ),
-                        row["survived"] == "1",
-                    ))
-                except (TypeError, ValueError):
-                    continue
+    def train_model(self, X, y: list) -> JackTrainerResponse:
+        '''Lowe 피처(X)와 레이블(y)로 로즈 전략들을 훈련 + Stratified 5-Fold 교차검증'''
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
-        if not data:
-            data = _TRAIN_DATA
+        X = X.apply(pd.to_numeric, errors="coerce").fillna(0)
 
         strategies = [
             LogisticRegressionStrategy(),
             RandomForestStrategy(),
             XGBoostStrategy(),
             LightGBMStrategy(),
-            CatBoostStrategy(),
             DecisionTreeStrategy(),
             SVMStrategy(),
             KNNStrategy(),
             NaiveBayesStrategy(),
-            KMeansPCAStrategy(),
+            VotingEnsembleStrategy(),
         ]
 
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
         results: dict[str, Any] = {}
+
         for strategy in strategies:
-            correct = sum(
-                1 for features, actual in data
-                if strategy.predict(features).survived == actual
-            )
-            accuracy = correct / len(data)
+            # 전체 데이터로 fit (최종 모델)
+            strategy.fit(X, y)
+
+            # 5-Fold 교차검증으로 정확도 측정
+            sklearn_model = strategy._model
+            scores = cross_val_score(sklearn_model, X, y, cv=cv, scoring="accuracy", n_jobs=-1)
+            accuracy = float(scores.mean())
+            std      = float(scores.std())
+
             results[strategy.name] = {
                 "accuracy": round(accuracy, 4),
-                "correct": correct,
-                "total": len(data),
+                "std":      round(std, 4),
+                "cv_scores": [round(s, 4) for s in scores.tolist()],
             }
             logger.info(
-                "JackTrainerInteractor: %s accuracy=%.4f (%d/%d)",
-                strategy.name, accuracy, correct, len(data),
+                "JackTrainerInteractor: %s  CV accuracy=%.4f (±%.4f)",
+                strategy.name, accuracy, std,
             )
 
         return results

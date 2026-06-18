@@ -1,111 +1,94 @@
 import pytest
 
-from apps.titanic.domain.entities.passenger_jack_trainer_entity import JackTrainerEntity
-from apps.titanic.domain.value_objects.passenger_jack_trainer_vo import (
-    Age,
-    FamilyRelation,
-    Gender,
-    PassengerId,
-    SurvivedStatus,
-)
+from apps.titanic.domain.entities.passenger_jack_trainer_entity import JackTrainerEntity, PassengerId
+from apps.titanic.domain.value_objects.social_profile_vo import SocialProfile
+from apps.titanic.domain.value_objects.travel_class_vo import TravelClass
+from apps.titanic.domain.value_objects.boarding_info_vo import BoardingInfo
+from apps.titanic.domain.value_objects.survived_vo import SurvivedStatus, SurvivedType
 
 
 def _make_entity(
     passenger_id: str = "P001",
     name: str | None = "Dawson, Mr. Jack",
     gender_raw: str | None = "male",
-    age_value: float | None = 30.0,
-    sib_sp: int = 0,
-    parch: int = 0,
-    survived: SurvivedStatus = SurvivedStatus.PERISHED,
+    pclass_raw: str = "3",
+    survived: SurvivedStatus = SurvivedStatus(value=SurvivedType.PERISHED),
 ) -> JackTrainerEntity:
     return JackTrainerEntity(
         passenger_id=PassengerId(passenger_id),
         name=name,
-        gender=Gender.from_raw(gender_raw),
-        age=Age(age_value),
-        family_relation=FamilyRelation(sib_sp=sib_sp, parch=parch),
+        social_profile=SocialProfile.from_raw(name, gender_raw),
+        travel_class=TravelClass.from_raw(pclass_raw, "", "7.25"),
+        boarding_info=BoardingInfo.from_raw("S", "A/5 21171"),
         survived=survived,
     )
 
 
-class TestFamilyRelation:
-    def test_traveled_alone_when_no_family(self):
-        assert _make_entity(sib_sp=0, parch=0).family_relation.traveled_alone is True
+class TestSocialProfile:
+    def test_male_mr_entity(self):
+        e = _make_entity(name="Dawson, Mr. Jack", gender_raw="male")
+        assert e.social_profile.is_female is False
+        assert e.social_profile.survival_priority == 0
 
-    def test_not_alone_when_has_siblings(self):
-        assert _make_entity(sib_sp=1, parch=0).family_relation.traveled_alone is False
-
-    def test_not_alone_when_has_children(self):
-        assert _make_entity(sib_sp=0, parch=1).family_relation.traveled_alone is False
-
-    def test_total_is_sum_of_sib_sp_and_parch(self):
-        assert _make_entity(sib_sp=2, parch=3).family_relation.total == 5
+    def test_female_mrs_entity(self):
+        e = _make_entity(name="Dewitt Bukater, Mrs. John", gender_raw="female")
+        assert e.social_profile.is_female is True
+        assert e.social_profile.survival_priority == 2
 
 
-class TestAge:
-    def test_is_minor_under_18(self):
-        assert _make_entity(age_value=15.0).age.is_minor is True
+class TestTravelClass:
+    def test_third_class_economy(self):
+        e = _make_entity(pclass_raw="3")
+        assert e.travel_class.economic_tier == "economy"
 
-    def test_is_not_minor_at_18(self):
-        assert _make_entity(age_value=18.0).age.is_minor is False
-
-    def test_is_not_minor_above_18(self):
-        assert _make_entity(age_value=30.0).age.is_minor is False
-
-    def test_none_age_is_not_minor(self):
-        assert _make_entity(age_value=None).age.is_minor is False
-
-    def test_negative_age_raises(self):
-        with pytest.raises(ValueError):
-            _make_entity(age_value=-1.0)
+    def test_first_class_premium(self):
+        e = _make_entity(pclass_raw="1")
+        assert e.travel_class.economic_tier == "premium"
 
 
 class TestRecordSurvival:
     def test_record_true_sets_survived(self):
-        entity = _make_entity(survived=SurvivedStatus.UNKNOWN)
-        entity.record_survival(True)
-        assert entity.survived == SurvivedStatus.SURVIVED
+        e = _make_entity(survived=SurvivedStatus(value=SurvivedType.UNKNOWN))
+        e.record_survival(True)
+        assert e.survived == SurvivedStatus(value=SurvivedType.SURVIVED)
 
     def test_record_false_sets_perished(self):
-        entity = _make_entity(survived=SurvivedStatus.UNKNOWN)
-        entity.record_survival(False)
-        assert entity.survived == SurvivedStatus.PERISHED
+        e = _make_entity(survived=SurvivedStatus(value=SurvivedType.UNKNOWN))
+        e.record_survival(False)
+        assert e.survived == SurvivedStatus(value=SurvivedType.PERISHED)
 
     def test_record_raises_when_already_set(self):
-        # UNKNOWN 상태가 아닐 때 중복 기록 불가
-        entity = _make_entity(survived=SurvivedStatus.SURVIVED)
+        e = _make_entity(survived=SurvivedStatus(value=SurvivedType.SURVIVED))
         with pytest.raises(ValueError):
-            entity.record_survival(False)
+            e.record_survival(False)
 
 
 class TestCorrectName:
     def test_updates_name(self):
-        entity = _make_entity(name="Old Name")
-        entity.correct_name("New Name")
-        assert entity.name == "New Name"
+        e = _make_entity(name="Old Name")
+        e.correct_name("New Name")
+        assert e.name == "New Name"
 
     def test_strips_whitespace(self):
-        entity = _make_entity()
-        entity.correct_name("  Jack Dawson  ")
-        assert entity.name == "Jack Dawson"
+        e = _make_entity()
+        e.correct_name("  Jack Dawson  ")
+        assert e.name == "Jack Dawson"
 
     def test_blank_name_raises(self):
-        entity = _make_entity()
+        e = _make_entity()
         with pytest.raises(ValueError):
-            entity.correct_name("   ")
+            e.correct_name("   ")
 
 
 class TestEquality:
-    # __eq__ 버그: isinstance(other, Passenger) → Passenger 미정의 → NameError 발생
-    # 아래 테스트는 이 버그를 문서화한다 (Red → 수정 대상: JackTrainerEntity로 교체)
-    def test_eq_raises_due_to_undefined_passenger(self):
-        with pytest.raises(NameError):
-            _make_entity(passenger_id="P001") == _make_entity(passenger_id="P001")
+    def test_same_passenger_id_is_equal(self):
+        assert _make_entity("P001") == _make_entity("P001")
 
-    def test_hash_is_based_on_passenger_id(self):
-        # __hash__는 PassengerId 기반 — __eq__ 버그와 무관하게 동작
-        assert hash(_make_entity(passenger_id="P001")) == hash(_make_entity(passenger_id="P001"))
+    def test_different_passenger_id_not_equal(self):
+        assert _make_entity("P001") != _make_entity("P002")
 
-    def test_different_passenger_id_has_different_hash(self):
-        assert hash(_make_entity(passenger_id="P001")) != hash(_make_entity(passenger_id="P002"))
+    def test_hash_same_for_same_id(self):
+        assert hash(_make_entity("P001")) == hash(_make_entity("P001"))
+
+    def test_hash_different_for_different_id(self):
+        assert hash(_make_entity("P001")) != hash(_make_entity("P002"))

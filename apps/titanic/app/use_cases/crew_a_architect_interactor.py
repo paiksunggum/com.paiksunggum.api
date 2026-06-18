@@ -1,9 +1,10 @@
 ﻿from __future__ import annotations
 
 import logging
+from typing import Any
 from kiwipiepy import Kiwi
 
-from titanic.app.constants.intent_map import INTENT_MAP
+from apps.titanic.app.constants.intent_map import INTENT_MAP
 from apps.titanic.adapter.inbound.api.schemas.crew_a_architect_schema import AArchitectSchema
 from apps.titanic.app.dtos.crew_a_architect_dto import AArchitectQuery, AArchitectResponse
 from apps.titanic.app.ports.input.crew_a_architect_use_case import AArchitectUseCase

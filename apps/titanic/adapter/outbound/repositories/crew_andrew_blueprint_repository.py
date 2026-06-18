@@ -14,7 +14,7 @@ logger = logging.getLogger("apps")
 
 def _row_to_dict(person: JackTrainerORM, booking: RoseModelORM | None) -> dict[str, Any]:
     return {
-        "id": person.id,
+        "id": person.passenger_id,
         "passenger_id": person.passenger_id,
         "survived": person.survived,
         "pclass": booking.pclass if booking else None,

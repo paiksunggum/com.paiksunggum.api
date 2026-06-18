@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerORM
-from apps.titanic.domain.entities.passenger_jack_trainer_entity import JackTrainerEntity
-from apps.titanic.domain.value_objects.passenger_jack_trainer_vo import (
-    Age,
-    FamilyRelation,
-    Gender,
-    PassengerId,
-    SurvivedStatus,
-)
+from apps.titanic.domain.entities.passenger_jack_trainer_entity import JackTrainerEntity, PassengerId
+from apps.titanic.domain.value_objects.social_profile_vo import SocialProfile
+from apps.titanic.domain.value_objects.travel_class_vo import TravelClass
+from apps.titanic.domain.value_objects.boarding_info_vo import BoardingInfo
+from apps.titanic.domain.value_objects.survived_vo import SurvivedStatus
 
 
 class JackTrainerMapper:
@@ -19,11 +16,18 @@ class JackTrainerMapper:
         return JackTrainerEntity(
             passenger_id=PassengerId(orm.passenger_id or ""),
             name=orm.name,
-            gender=Gender.from_raw(orm.gender),
-            age=Age(float(orm.age) if orm.age else None),
-            family_relation=FamilyRelation(
-                sib_sp=int(orm.sib_sp or 0),
-                parch=int(orm.parch or 0),
+            social_profile=SocialProfile.from_raw(
+                name_raw=orm.name,
+                gender_raw=orm.gender,
+            ),
+            travel_class=TravelClass.from_raw(
+                pclass_raw=orm.pclass,
+                cabin_raw=orm.cabin,
+                fare_raw=orm.fare,
+            ),
+            boarding_info=BoardingInfo.from_raw(
+                embarked_raw=orm.embarked,
+                ticket_raw=orm.ticket,
             ),
             survived=SurvivedStatus.from_raw(orm.survived),
         )
@@ -33,9 +37,11 @@ class JackTrainerMapper:
         return JackTrainerORM(
             passenger_id=str(entity.passenger_id),
             name=entity.name,
-            gender=entity.gender.value,
-            age=str(entity.age.value) if entity.age.value is not None else "",
-            sib_sp=str(entity.family_relation.sib_sp),
-            parch=str(entity.family_relation.parch),
+            gender=str(entity.social_profile.gender),
+            pclass=str(entity.travel_class.pclass),
+            cabin=str(entity.travel_class.cabin_zone),
+            fare=str(entity.travel_class.fare.value),
+            embarked=str(entity.boarding_info.embarked),
+            ticket=str(entity.boarding_info.ticket),
             survived=entity.survived.value,
         )

@@ -3,6 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+import pandas as pd
+
 from apps.titanic.adapter.inbound.api.schemas.passenger_rose_model_schema import RoseModelSchema
 from apps.titanic.app.dtos.passenger_rose_model_dto import RoseModelResponse
 
@@ -33,7 +35,13 @@ class SurvivalPredictionStrategy(ABC):
         pass
 
     @abstractmethod
+    def fit(self, X: pd.DataFrame, y: list) -> None:
+        """Lowe 피처 엔지니어링 결과로 모델을 훈련한다."""
+        pass
+
+    @abstractmethod
     def predict(self, features: PredictionFeatures) -> PredictionResult:
+        """단일 승객 예측 (Lowe와 동일한 변환 규칙 적용)."""
         pass
 
 

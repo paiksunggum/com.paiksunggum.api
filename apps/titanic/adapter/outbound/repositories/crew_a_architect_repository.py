@@ -1,9 +1,10 @@
 ﻿from __future__ import annotations
+from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kiwipiepy import Kiwi
 
-from titanic.app.constants.intent_map import INTENT_MAP
+from apps.titanic.app.constants.intent_map import INTENT_MAP
 from apps.titanic.app.dtos.crew_a_architect_dto import AArchitectQuery, AArchitectResponse
 from apps.titanic.app.ports.output.crew_a_architect_port import AArchitectPort
 import logging

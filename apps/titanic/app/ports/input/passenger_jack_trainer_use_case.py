@@ -15,6 +15,6 @@ class JackTrainerUseCase(ABC):
         pass
 
     @abstractmethod
-    def train_model(self, train_set) -> JackTrainerResponse:
-        '''로즈가 제안한 모델들을 훈련시키는 메소드'''
+    def train_model(self, X, y: list) -> JackTrainerResponse:
+        '''Lowe 피처(X)와 레이블(y)로 로즈 전략들을 훈련시키는 메소드'''
         pass
