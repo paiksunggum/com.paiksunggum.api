@@ -74,6 +74,14 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
         """첫 채팅 요청 시 1회만 실행 — 모델 훈련 + 통계 계산 결과를 모듈 캐시에 저장."""
         train_set: pd.DataFrame = await self.andrew.get_train_set()
         test_set:  pd.DataFrame = await self.andrew.get_test_set()
+
+        if train_set.empty:
+            _STATS_CACHE["context"] = "[타이타닉 DB에 데이터가 없습니다. 데이터 수집 페이지에서 CSV를 먼저 업로드해 주세요.]"
+            _STATS_CACHE["best_algo"] = "없음"
+            _STATS_CACHE["best_acc"] = 0.0
+            logger.warning("SmithCaptainInteractor: DB가 비어 있어 통계 캐시를 빌드할 수 없습니다.")
+            return
+
         X, y        = self.lowe.feature_engineering(train_set, test_set)
         trained_set = self.jack.train_model(X, y)
         tested_set  = self.cal.test_model(trained_set)
@@ -133,7 +141,11 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
         best_acc  = _STATS_CACHE["best_acc"]
 
         prompt = f"{context}\n\n질문: {question}"
-        answer = IrisModel().generate_reply(history=_CAPTAIN_PERSONA, last_user_text=prompt)
+        try:
+            answer = IrisModel().generate_reply(history=_CAPTAIN_PERSONA, last_user_text=prompt)
+        except Exception as e:
+            logger.warning("SmithCaptainInteractor: Gemini 호출 실패 | %s", e)
+            answer = "지금은 답변하기 어렵소. 잠시 후 다시 물어보시오."
         return SmithCaptainChatResult(answer=answer)
 
     async def introduce_myself(self, schema: SmithCaptainResponseSchema) -> SmithCaptainResponse:

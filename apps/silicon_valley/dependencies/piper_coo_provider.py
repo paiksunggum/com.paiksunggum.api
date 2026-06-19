@@ -1,0 +1,20 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
+
+from core.matrix.oracle_database import get_db
+from apps.silicon_valley.adapter.outbound.repositories.piper_coo_repository import PiperCooRepository
+from apps.silicon_valley.app.ports.input.piper_coo_use_case import PiperCooUseCase
+from apps.silicon_valley.app.ports.output.piper_coo_port import PiperCooPort
+from apps.silicon_valley.app.use_cases.piper_coo_interactor import PiperCooInteractor
+
+
+def get_piper_coo_repository(
+    db: AsyncSession = Depends(get_db),
+) -> PiperCooPort:
+    return PiperCooRepository(session=db)
+
+
+def get_piper_coo_use_case(
+    repository: PiperCooPort = Depends(get_piper_coo_repository),
+) -> PiperCooUseCase:
+    return PiperCooInteractor(repository=repository)

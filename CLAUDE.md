@@ -1,1 +1,1 @@
-C:/dev/com.paiksunggum/vault/paik/CLAUDE.md
+../vault/paik/CLAUDE.md
