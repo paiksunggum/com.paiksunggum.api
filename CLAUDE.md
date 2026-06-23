@@ -1,1 +1,1 @@
-../vault/paik/CLAUDE.md
+../CLAUDE.md
