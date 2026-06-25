@@ -1,0 +1,46 @@
+# [하네스 엔지니어링] pre-commit 훅 — FastAPI (paik/)
+#
+# 커밋 전 자동 실행되어 통과 못 하면 커밋을 차단한다.
+# 이것이 하네스 엔지니어링의 핵심: "규칙은 사람이 기억하는 게 아니라 도구가 강제한다."
+#
+# 설치 (최초 1회):
+#   pip install pre-commit
+#   pre-commit install       # .git/hooks/pre-commit 에 자동 등록
+#
+# 수동 전체 실행:
+#   pre-commit run --all-files
+#
+# 훅 제외하고 긴급 커밋 (지양):
+#   git commit --no-verify
+
+repos:
+  - repo: local
+    hooks:
+
+      # ── 1. ruff 린트 (자동 수정 포함) ───────────────────────────────────────
+      # pyflakes, pycodestyle, isort, naming 통합 검사
+      - id: ruff-lint
+        name: "[Python] Ruff Lint"
+        entry: ruff check . --fix
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      # ── 2. ruff 포맷 ─────────────────────────────────────────────────────────
+      # black 호환 포맷터. 줄길이 88자 강제.
+      - id: ruff-format
+        name: "[Python] Ruff Format"
+        entry: ruff format .
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      # ── 3. 스타 토폴로지 검증 ─────────────────────────────────────────────────
+      # 스포크→스포크, 허브→스포크 import 위반 탐지
+      # 위반 시 커밋 차단 + 수정 위치 안내
+      - id: validate-topology
+        name: "[Arch] Star Topology Validator"
+        entry: python scripts/validate_topology.py
+        language: system
+        types: [python]
+        pass_filenames: false

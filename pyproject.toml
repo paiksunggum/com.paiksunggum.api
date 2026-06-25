@@ -1,0 +1,103 @@
+# [하네스 엔지니어링] FastAPI Python 린트 / 타입 / 토폴로지 통합 설정
+#
+# 도구 역할:
+#   ruff         — 린트 + 포맷 (flake8 + isort + black 통합 대체)
+#   mypy         — 정적 타입 검사 (수동 실행 권장, pre-commit 제외)
+#   import-linter — 스타 토폴로지 의존성 규칙 강제 (lint-imports)
+#
+# 실행:
+#   ruff check . --fix   # 린트 자동 수정
+#   ruff format .        # 포맷
+#   mypy .               # 타입 체크
+#   lint-imports         # 토폴로지 정적 분석
+
+
+# ── ruff ──────────────────────────────────────────────────────────────────────
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+exclude = ["alembic/", "scripts/", "__pycache__"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle — 스타일 오류
+    "F",   # pyflakes    — 미사용 import / 변수
+    "I",   # isort       — import 정렬
+    "N",   # pep8-naming — 네이밍 컨벤션
+    "UP",  # pyupgrade   — 구버전 Python 구문 현대화
+]
+ignore = [
+    "N999", # 모듈명에 하이픈 허용 (파일명 규칙 자유도)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+
+# ── mypy ──────────────────────────────────────────────────────────────────────
+# 주의: 기존 코드에 타입 힌트가 없으면 오류 다수 발생.
+#       strict = true 는 신규 모듈 작성 기준. 레거시 모듈은 점진적으로 적용.
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+ignore_missing_imports = true
+exclude = [
+    "alembic/",
+    "scripts/",
+    "apps/sports/",
+    "apps/admin/",
+    "apps/weather/",
+    "apps/vision/",
+    "apps/social_network/",
+    "apps/home_page.py",
+]
+
+
+# ── import-linter (스타 토폴로지 강제) ─────────────────────────────────────────
+# 실행: pip install import-linter → lint-imports
+
+[tool.importlinter]
+root_packages = ["apps", "core"]
+include_external_packages = true
+
+# 규칙 1: 스포크 독립성 — 스포크끼리 직접 import 금지
+[[tool.importlinter.contracts]]
+name = "[Star Topology] Spokes must not import from each other"
+type = "independence"
+modules = [
+    "apps.agora",
+    "apps.chat",
+    "apps.friday13th",
+    "apps.harry_potter",
+    "apps.imitation_game",
+    "apps.inception",
+    "apps.silicon_valley",
+    "apps.social_network",
+    "apps.sports",
+    "apps.titanic",
+    "apps.vision",
+    "apps.weather",
+]
+
+# 규칙 2: 허브 순수성 — 허브(star_craft)는 스포크를 import 금지
+[[tool.importlinter.contracts]]
+name = "[Star Topology] Hub must not import from spokes"
+type = "forbidden"
+source_modules = ["apps.star_craft"]
+forbidden_modules = [
+    "apps.agora",
+    "apps.chat",
+    "apps.friday13th",
+    "apps.harry_potter",
+    "apps.imitation_game",
+    "apps.inception",
+    "apps.silicon_valley",
+    "apps.social_network",
+    "apps.sports",
+    "apps.titanic",
+    "apps.vision",
+    "apps.weather",
+]
