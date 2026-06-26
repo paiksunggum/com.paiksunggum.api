@@ -154,14 +154,14 @@ async def secom_init_db():
         seeded=[],
     )
 
-
 if __name__ == "__main__":
     import uvicorn
-
+    
+    # 수정된 부분 시작
     uvicorn.run(
-        "main:app",
-        host="127.0.0.1",
-        port=8000,
-        reload=True,
-        reload_dirs=[".", "apps"],
+        "main:app",             # 파일명:변수명 형태여야 오류가 안 납니다.
+        host="0.0.0.0",         # 외부 접속 허용
+        port=int(os.environ.get("PORT", 8000)), # Railway가 정해준 포트, 없으면 8000
+        reload=True
     )
+    # 수정된 부분 끝
