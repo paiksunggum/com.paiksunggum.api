@@ -65,7 +65,7 @@ def init_engine() -> None:
 init_engine()
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession]:
     if AsyncSessionLocal is None:
         init_engine()
     if AsyncSessionLocal is None:
@@ -80,11 +80,19 @@ async def create_all_tables() -> None:
     if engine is None:
         return
 
-    from apps.sports.app.models.users_model import User  # noqa: F401
-    from apps.titanic.adapter.outbound.orm.passenger_rose_model_orm import RoseModelORM  # noqa: F401
-    from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerORM  # noqa: F401
-    from core.matrix.theone_base import TheOneBase
     from sqlmodel import SQLModel
+
+    from apps.sports.app.models.ads_model import Ads  # noqa: F401
+    from apps.sports.app.models.sports_model import Sports  # noqa: F401
+    from apps.sports.app.models.practice_model import Practice  # noqa: F401
+    from apps.sports.app.models.users_model import User  # noqa: F401
+    from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import (
+        JackTrainerORM,  # noqa: F401
+    )
+    from apps.titanic.adapter.outbound.orm.passenger_rose_model_orm import (
+        RoseModelORM,  # noqa: F401
+    )
+    from core.matrix.theone_base import TheOneBase
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

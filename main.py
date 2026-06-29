@@ -47,6 +47,7 @@ from apps.friday13th.adapter.inbound.api.schemas import InitDbResponse
 from apps.friday13th.adapter.inbound.api.v1.login_router import login_router
 from apps.friday13th.adapter.inbound.api.v1.signup_router import signup_router
 from apps.home_page import home_page_html
+from apps.automode.adapter.inbound.api import automode_router
 from apps.titanic.adapter.inbound.api import titanic_router
 from apps.silicon_valley.adapter.inbound.api import silicon_valley_router
 from apps.weather.app.schemas import WeatherResponse
@@ -75,6 +76,7 @@ app = FastAPI(
 )
 
 app.include_router(forma_router)
+app.include_router(automode_router)
 app.include_router(titanic_router)
 app.include_router(silicon_valley_router)
 app.include_router(login_router)
