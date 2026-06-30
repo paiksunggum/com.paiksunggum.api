@@ -10,22 +10,27 @@ from alembic import context
 _backend_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_backend_root))
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(_backend_root / ".env")
 
-from core.matrix.oracle_database import Base, normalize_async_database_url  # noqa: E402
-from apps.forma.app.models.users_model import User  # noqa: E402, F401
-from apps.titanic.adapter.outbound.orm.booking_orm import BookingORM  # noqa: E402, F401
-from apps.titanic.adapter.outbound.orm.person_orm import PersonORM  # noqa: E402, F401
 from sqlmodel import SQLModel  # noqa: E402
+
+from apps.automode.adapter.outbound.orm.juso_contact_orm import (  # noqa: E402, F401
+    JusoContactORM,
+)
+from apps.titanic.adapter.outbound.orm.passenger_jack_trainer_orm import (  # noqa: E402, F401
+    JackTrainerORM,
+)
+from core.matrix.oracle_database import Base, normalize_async_database_url  # noqa: E402
+from core.matrix.theone_base import TheOneBase  # noqa: E402
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = [Base.metadata, SQLModel.metadata]
+target_metadata = [Base.metadata, SQLModel.metadata, TheOneBase.metadata]
 
 _raw_url = (os.getenv("DATABASE_URL") or "").strip()
 if _raw_url:

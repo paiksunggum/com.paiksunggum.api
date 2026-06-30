@@ -1,31 +1,29 @@
-"""Faker Orchestrator — EXAONE 3.5 7.8B (Ollama) 기반 로컬 오케스트레이터."""
+"""Faker Orchestrator — 지시 전달 전용 오케스트레이터.
+SLM(Exaone) 직접 호출 금지. 각 spoke(apps/*)의 outbound 어댑터가 담당한다.
+"""
 
-import os
+from __future__ import annotations
 
-from ollama import AsyncClient, Message
-
-MODEL = "exaone3.5:7.8b"
-_DEFAULT_HOST = "http://localhost:11434"
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 
 class FakerOrchestrator:
-    """EXAONE 3.5 7.8B를 로컬 Ollama로 실행하는 비동기 오케스트레이터."""
+    """지시만 하는 오케스트레이터. LLM을 직접 호출하지 않는다."""
 
-    def __init__(
-        self,
-        model: str = MODEL,
-        host: str | None = None,
-    ) -> None:
-        self.model = model
-        self._client = AsyncClient(host=host or os.getenv("OLLAMA_HOST", _DEFAULT_HOST))
-        self.model = model
-        self._client = AsyncClient(host=host)
+    def __init__(self) -> None:
+        self._tools: dict[str, Callable[..., Awaitable[Any]]] = {}
 
-    async def chat(self, messages: list[Message]) -> str:
-        """대화 이력을 받아 모델 응답 텍스트를 반환한다."""
-        response = await self._client.chat(model=self.model, messages=messages)
-        return response.message.content
+    def register(self, name: str, handler: Callable[..., Awaitable[Any]]) -> None:
+        self._tools[name] = handler
 
-    async def ask(self, prompt: str) -> str:
-        """단발 질문 편의 메서드."""
-        return await self.chat([{"role": "user", "content": prompt}])
+    async def dispatch(self, tool: str, args: dict[str, Any]) -> Any:
+        if tool not in self._tools:
+            raise ValueError(
+                f"알 수 없는 툴: {tool!r}. 사용 가능: {list(self._tools)}"
+            )
+        return await self._tools[tool](**args)
+
+    @property
+    def tool_names(self) -> list[str]:
+        return list(self._tools)
