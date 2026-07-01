@@ -6,10 +6,10 @@ from apps.automode.app.dtos.discord_dto import (
     DiscordIntroduceQuery,
     DiscordIntroduceResult,
 )
-from apps.automode.app.ports.output.i_discord_port import IDiscordPort
+from apps.automode.app.ports.output.discord_port import DiscordPort
 
 
-class DiscordRepository(IDiscordPort):
+class DiscordRepository(DiscordPort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 

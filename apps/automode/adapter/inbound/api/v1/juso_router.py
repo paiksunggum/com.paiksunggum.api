@@ -19,7 +19,7 @@ from apps.automode.app.dtos.juso_dto import (
     JusoContactCommand,
     JusoIntroduceQuery,
 )
-from apps.automode.app.ports.input.i_juso_use_case import IJusoUseCase
+from apps.automode.app.ports.input.juso_use_case import JusoUseCase
 from apps.automode.dependencies.juso_provider import get_juso_use_case
 
 logger = logging.getLogger("apps")
@@ -102,7 +102,7 @@ def _log_contact_samples(contacts: list[JusoContactSchema]) -> None:
 
 @juso_router.get("/contacts", response_model=list[JusoContactItemSchema])
 async def get_contacts(
-    use_case: IJusoUseCase = Depends(get_juso_use_case),
+    use_case: JusoUseCase = Depends(get_juso_use_case),
 ) -> list[JusoContactItemSchema]:
     items = await use_case.list_contacts()
     return [JusoContactItemSchema(name=i.name, email=i.email) for i in items]
@@ -110,7 +110,7 @@ async def get_contacts(
 
 @juso_router.get("/myself", response_model=JusoIntroduceResponseSchema)
 async def introduce_myself(
-    use_case: IJusoUseCase = Depends(get_juso_use_case),
+    use_case: JusoUseCase = Depends(get_juso_use_case),
 ) -> JusoIntroduceResponseSchema:
     logger.info("[automode] 주소 검색 서비스 자기소개 요청")
     result = await use_case.introduce_myself(JusoIntroduceQuery(id=3, name="주소검색"))
@@ -120,7 +120,7 @@ async def introduce_myself(
 @juso_router.post("/contacts/upload", response_model=JusoContactUploadResponse)
 async def upload_contacts_csv(
     file: UploadFile = File(...),
-    use_case: IJusoUseCase = Depends(get_juso_use_case),
+    use_case: JusoUseCase = Depends(get_juso_use_case),
 ) -> JusoContactUploadResponse:
     raw = await file.read()
     filename = _require_csv_upload(file.filename, raw)

@@ -11,7 +11,8 @@ import logging
 import re
 from typing import Any
 
-from apps.automode.app.ports.output.i_slm_client import ISLMClient
+from apps.automode.app.ports.input.orchestrator_use_case import OrchestratorUseCase
+from apps.automode.app.ports.output.slm_port import SLMPort
 from core.lol.faker_orchestrator import FakerOrchestrator
 
 logger = logging.getLogger("apps")
@@ -48,8 +49,8 @@ _PROMPT_TEMPLATE = """\
 {{"tool": "도구이름", "args": {{...}}}}"""
 
 
-class OrchestratorInteractor:
-    def __init__(self, slm: ISLMClient, orchestrator: FakerOrchestrator) -> None:
+class OrchestratorInteractor(OrchestratorUseCase):
+    def __init__(self, slm: SLMPort, orchestrator: FakerOrchestrator) -> None:
         self._slm = slm
         self._orchestrator = orchestrator
 

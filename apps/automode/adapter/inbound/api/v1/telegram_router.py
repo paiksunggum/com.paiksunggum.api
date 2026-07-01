@@ -13,7 +13,7 @@ from apps.automode.app.dtos.telegram_dto import (
     TelegramIntroduceQuery,
     TelegramSendCommand,
 )
-from apps.automode.app.ports.input.i_telegram_use_case import ITelegramUseCase
+from apps.automode.app.ports.input.telegram_use_case import TelegramUseCase
 from apps.automode.dependencies.telegram_provider import get_telegram_use_case
 
 logger = logging.getLogger("apps")
@@ -23,7 +23,7 @@ telegram_router = APIRouter(prefix="/telegram", tags=["automode"])
 @telegram_router.post("/send", response_model=TelegramSendResponse)
 async def send_message(
     body: TelegramSendRequest,
-    use_case: ITelegramUseCase = Depends(get_telegram_use_case),
+    use_case: TelegramUseCase = Depends(get_telegram_use_case),
 ) -> TelegramSendResponse:
     logger.info("[automode] 텔레그램 메시지 전송 요청 | text=%s", body.text[:30])
     try:
@@ -36,7 +36,7 @@ async def send_message(
 
 @telegram_router.get("/myself", response_model=TelegramIntroduceResponseSchema)
 async def introduce_myself(
-    use_case: ITelegramUseCase = Depends(get_telegram_use_case),
+    use_case: TelegramUseCase = Depends(get_telegram_use_case),
 ) -> TelegramIntroduceResponseSchema:
     logger.info("[automode] Telegram 서비스 자기소개 요청")
     result = await use_case.introduce_myself(

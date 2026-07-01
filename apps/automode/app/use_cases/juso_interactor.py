@@ -7,12 +7,12 @@ from apps.automode.app.dtos.juso_dto import (
     JusoIntroduceQuery,
     JusoIntroduceResult,
 )
-from apps.automode.app.ports.input.i_juso_use_case import IJusoUseCase
-from apps.automode.app.ports.output.i_juso_port import IJusoPort
+from apps.automode.app.ports.input.juso_use_case import JusoUseCase
+from apps.automode.app.ports.output.juso_port import JusoPort
 
 
-class JusoInteractor(IJusoUseCase):
-    def __init__(self, repository: IJusoPort) -> None:
+class JusoInteractor(JusoUseCase):
+    def __init__(self, repository: JusoPort) -> None:
         self._repository = repository
 
     async def introduce_myself(self, query: JusoIntroduceQuery) -> JusoIntroduceResult:

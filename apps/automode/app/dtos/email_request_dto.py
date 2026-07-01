@@ -9,6 +9,7 @@ from apps.star_craft.domain.ontology.spam.spam_category import SpamCategory
 class EmailSendCommand:
     to: str
     prompt: str
+    to_name: str = ""
 
 
 @dataclass

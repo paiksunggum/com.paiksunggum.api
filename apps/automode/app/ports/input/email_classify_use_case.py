@@ -8,7 +8,7 @@ from apps.automode.app.dtos.email_request_dto import (
 )
 
 
-class IEmailClassifyUseCase(ABC):
+class EmailClassifyUseCase(ABC):
     @abstractmethod
     async def classify(self, command: EmailClassifyCommand) -> EmailClassifyResult:
         pass

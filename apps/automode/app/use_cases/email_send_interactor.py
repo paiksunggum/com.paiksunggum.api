@@ -5,9 +5,11 @@ import logging
 import re
 
 from apps.automode.app.dtos.email_request_dto import EmailSendCommand, EmailSendResult
-from apps.automode.app.ports.input.i_email_send_use_case import IEmailSendUseCase
-from apps.automode.app.ports.output.i_email_gateway import IEmailGateway
-from apps.automode.app.ports.output.i_slm_client import ISLMClient
+from apps.automode.app.dtos.telegram_dto import TelegramSendCommand
+from apps.automode.app.ports.input.email_send_use_case import EmailSendUseCase
+from apps.automode.app.ports.output.email_gateway_port import EmailGatewayPort
+from apps.automode.app.ports.output.slm_port import SLMPort
+from apps.automode.app.ports.output.telegram_port import TelegramPort
 from apps.automode.domain.entities.email_message import EmailMessage
 from apps.star_craft.domain.ontology.email import EmailOntology
 from apps.star_craft.domain.ontology.email.email_type import EmailType
@@ -30,10 +32,13 @@ _PROMPT = """
 """
 
 
-class EmailSendInteractor(IEmailSendUseCase):
-    def __init__(self, slm: ISLMClient, gateway: IEmailGateway) -> None:
+class EmailSendInteractor(EmailSendUseCase):
+    def __init__(
+        self, slm: SLMPort, gateway: EmailGatewayPort, telegram: TelegramPort
+    ) -> None:
         self._slm = slm
         self._gateway = gateway
+        self._telegram = telegram
 
     def _extract_json(self, raw: str) -> dict:
         raw = raw.strip()
@@ -85,4 +90,16 @@ class EmailSendInteractor(IEmailSendUseCase):
         logger.info(
             "[automode] N8n 발송 완료 to=%s subject=%s", message.to, message.subject
         )
+
+        recipient = command.to_name or command.to
+        report = (
+            f"[업무 보고] {recipient}에게 메일을 정상적으로 발송했습니다 ✅"
+            f"\n제목: {message.subject}"
+        )
+        try:
+            await self._telegram.send_message(TelegramSendCommand(text=report))
+            logger.info("[automode] Telegram 업무 보고 완료")
+        except Exception:
+            logger.warning("[automode] Telegram 보고 실패 — 이메일은 정상 발송됨")
+
         return EmailSendResult(to=message.to, subject=message.subject, success=True)

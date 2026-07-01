@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from apps.automode.app.dtos.email_request_dto import EmailSendCommand, EmailSendResult
 
 
-class IEmailSendUseCase(ABC):
+class EmailSendUseCase(ABC):
     @abstractmethod
     async def send(self, command: EmailSendCommand) -> EmailSendResult:
         pass

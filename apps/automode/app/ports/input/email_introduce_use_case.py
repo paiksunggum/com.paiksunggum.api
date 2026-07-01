@@ -8,7 +8,7 @@ from apps.automode.app.dtos.email_request_dto import (
 )
 
 
-class IEmailIntroduceUseCase(ABC):
+class EmailIntroduceUseCase(ABC):
     @abstractmethod
     async def introduce_myself(
         self, query: EmailIntroduceQuery

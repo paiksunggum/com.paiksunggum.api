@@ -4,14 +4,12 @@ from apps.automode.app.dtos.email_request_dto import (
     EmailIntroduceQuery,
     EmailIntroduceResult,
 )
-from apps.automode.app.ports.input.i_email_introduce_use_case import (
-    IEmailIntroduceUseCase,
-)
-from apps.automode.app.ports.output.i_email_introduce_port import IEmailIntroducePort
+from apps.automode.app.ports.input.email_introduce_use_case import EmailIntroduceUseCase
+from apps.automode.app.ports.output.email_introduce_port import EmailIntroducePort
 
 
-class EmailIntroduceInteractor(IEmailIntroduceUseCase):
-    def __init__(self, repository: IEmailIntroducePort) -> None:
+class EmailIntroduceInteractor(EmailIntroduceUseCase):
+    def __init__(self, repository: EmailIntroducePort) -> None:
         self._repository = repository
 
     async def introduce_myself(

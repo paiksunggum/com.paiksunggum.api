@@ -12,12 +12,12 @@ from apps.automode.app.dtos.juso_dto import (
     JusoIntroduceQuery,
     JusoIntroduceResult,
 )
-from apps.automode.app.ports.output.i_juso_port import IJusoPort
+from apps.automode.app.ports.output.juso_port import JusoPort
 
 logger = logging.getLogger("apps")
 
 
-class JusoRepository(IJusoPort):
+class JusoRepository(JusoPort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 

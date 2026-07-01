@@ -6,12 +6,12 @@ from apps.automode.app.dtos.telegram_dto import (
     TelegramSendCommand,
     TelegramSendResult,
 )
-from apps.automode.app.ports.input.i_telegram_use_case import ITelegramUseCase
-from apps.automode.app.ports.output.i_telegram_port import ITelegramPort
+from apps.automode.app.ports.input.telegram_use_case import TelegramUseCase
+from apps.automode.app.ports.output.telegram_port import TelegramPort
 
 
-class TelegramInteractor(ITelegramUseCase):
-    def __init__(self, repository: ITelegramPort) -> None:
+class TelegramInteractor(TelegramUseCase):
+    def __init__(self, repository: TelegramPort) -> None:
         self._repository = repository
 
     async def introduce_myself(

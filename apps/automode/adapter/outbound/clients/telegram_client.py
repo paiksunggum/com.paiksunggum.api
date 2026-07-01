@@ -11,7 +11,7 @@ from apps.automode.app.dtos.telegram_dto import (
     TelegramSendCommand,
     TelegramSendResult,
 )
-from apps.automode.app.ports.output.i_telegram_port import ITelegramPort
+from apps.automode.app.ports.output.telegram_port import TelegramPort
 
 logger = logging.getLogger("apps")
 
@@ -20,8 +20,7 @@ _CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 _API_BASE = "https://api.telegram.org"
 
 
-class TelegramClient(ITelegramPort):
-
+class TelegramClient(TelegramPort):
     async def introduce_myself(
         self, query: TelegramIntroduceQuery
     ) -> TelegramIntroduceResult:
@@ -40,6 +39,4 @@ class TelegramClient(ITelegramPort):
                 "[TelegramClient] 메시지 전송 완료 | message_id=%s",
                 data["result"]["message_id"],
             )
-            return TelegramSendResult(
-                ok=True, message_id=data["result"]["message_id"]
-            )
+            return TelegramSendResult(ok=True, message_id=data["result"]["message_id"])

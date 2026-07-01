@@ -8,8 +8,8 @@ from apps.automode.adapter.inbound.api.schemas.orchestrate_schema import (
     OrchestrateResponseSchema,
     OrchestrateSchema,
 )
-from apps.automode.app.ports.input.i_juso_use_case import IJusoUseCase
-from apps.automode.app.use_cases.orchestrator_interactor import OrchestratorInteractor
+from apps.automode.app.ports.input.juso_use_case import JusoUseCase
+from apps.automode.app.ports.input.orchestrator_use_case import OrchestratorUseCase
 from apps.automode.dependencies.juso_provider import get_juso_use_case
 from apps.automode.dependencies.orchestrator_provider import get_orchestrator
 
@@ -21,8 +21,8 @@ orchestrate_router = APIRouter(prefix="/orchestrate", tags=["automode"])
 @orchestrate_router.post("/", response_model=OrchestrateResponseSchema)
 async def orchestrate(
     schema: OrchestrateSchema,
-    interactor: OrchestratorInteractor = Depends(get_orchestrator),
-    juso: IJusoUseCase = Depends(get_juso_use_case),
+    interactor: OrchestratorUseCase = Depends(get_orchestrator),
+    juso: JusoUseCase = Depends(get_juso_use_case),
 ) -> OrchestrateResponseSchema:
     logger.info("[orchestrator] 명령 수신: %s", schema.message)
 

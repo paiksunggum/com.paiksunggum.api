@@ -10,15 +10,15 @@ from apps.automode.app.dtos.telegram_dto import (
 )
 
 
-class ITelegramPort(ABC):
+class TelegramUseCase(ABC):
     @abstractmethod
     async def introduce_myself(
         self, query: TelegramIntroduceQuery
     ) -> TelegramIntroduceResult:
-        """Telegram 서비스 자기소개 레포지토리 추상 메소드"""
+        """Telegram 서비스 자기소개"""
         pass
 
     @abstractmethod
     async def send_message(self, command: TelegramSendCommand) -> TelegramSendResult:
-        """텔레그램 Bot API로 메시지 전송"""
+        """텔레그램 메시지 전송"""
         pass

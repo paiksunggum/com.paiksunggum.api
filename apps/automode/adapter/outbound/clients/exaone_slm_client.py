@@ -5,7 +5,7 @@ import os
 
 from ollama import AsyncClient
 
-from apps.automode.app.ports.output.i_slm_client import ISLMClient
+from apps.automode.app.ports.output.slm_port import SLMPort
 
 logger = logging.getLogger("apps")
 
@@ -13,7 +13,7 @@ _MODEL = "exaone3.5:2.4b"
 _DEFAULT_HOST = "http://localhost:11434"
 
 
-class ExaoneSLMAdapter(ISLMClient):
+class ExaoneSLMClient(SLMPort):
     def __init__(self, model: str = _MODEL, host: str | None = None) -> None:
         self._model = model
         self._client = AsyncClient(host=host or os.getenv("OLLAMA_HOST", _DEFAULT_HOST))

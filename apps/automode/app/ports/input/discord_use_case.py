@@ -8,10 +8,10 @@ from apps.automode.app.dtos.discord_dto import (
 )
 
 
-class IDiscordPort(ABC):
+class DiscordUseCase(ABC):
     @abstractmethod
     async def introduce_myself(
         self, query: DiscordIntroduceQuery
     ) -> DiscordIntroduceResult:
-        """Discord 서비스 자기소개 레포지토리 추상 메소드"""
+        """Discord 서비스 자기소개"""
         pass

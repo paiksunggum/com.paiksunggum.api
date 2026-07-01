@@ -4,11 +4,11 @@ import os
 
 import httpx
 
-from apps.automode.app.ports.output.i_email_gateway import IEmailGateway
+from apps.automode.app.ports.output.email_gateway_port import EmailGatewayPort
 from apps.automode.domain.entities.email_message import EmailMessage
 
 
-class N8nEmailGateway(IEmailGateway):
+class N8nEmailGateway(EmailGatewayPort):
     def __init__(self) -> None:
         self._webhook_url = os.getenv("N8N_WEBHOOK_URL", "")
 

@@ -8,10 +8,8 @@ from apps.automode.app.dtos.email_request_dto import (
     EmailClassifyCommand,
     EmailClassifyResult,
 )
-from apps.automode.app.ports.input.i_email_classify_use_case import (
-    IEmailClassifyUseCase,
-)
-from apps.automode.app.ports.output.i_slm_client import ISLMClient
+from apps.automode.app.ports.input.email_classify_use_case import EmailClassifyUseCase
+from apps.automode.app.ports.output.slm_port import SLMPort
 from apps.star_craft.domain.ontology.spam.spam_category import SpamCategory
 
 logger = logging.getLogger("apps")
@@ -35,8 +33,8 @@ _PROMPT = """\
 {{"is_spam": true/false, "category": "카테고리"}}"""
 
 
-class ClassifySpamInteractor(IEmailClassifyUseCase):
-    def __init__(self, slm: ISLMClient) -> None:
+class ClassifySpamInteractor(EmailClassifyUseCase):
+    def __init__(self, slm: SLMPort) -> None:
         self._slm = slm
 
     async def classify(self, command: EmailClassifyCommand) -> EmailClassifyResult:
@@ -45,7 +43,12 @@ class ClassifySpamInteractor(IEmailClassifyUseCase):
         logger.info("[spam] LLM 응답: %s", raw)
 
         parsed = self._parse(raw)
-        category = SpamCategory(parsed.get("category", SpamCategory.LEGITIMATE.value))
+        raw_category = parsed.get("category", SpamCategory.LEGITIMATE.value)
+        try:
+            category = SpamCategory(raw_category)
+        except ValueError:
+            logger.warning("[spam] 알 수 없는 카테고리, 정상 처리: %r", raw_category)
+            category = SpamCategory.LEGITIMATE
         is_spam = bool(parsed.get("is_spam", False))
 
         return EmailClassifyResult(

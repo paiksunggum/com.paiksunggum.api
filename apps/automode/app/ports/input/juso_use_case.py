@@ -5,20 +5,23 @@ from abc import ABC, abstractmethod
 from apps.automode.app.dtos.juso_dto import (
     JusoContactCommand,
     JusoContactItem,
+    JusoContactUploadResult,
     JusoIntroduceQuery,
     JusoIntroduceResult,
 )
 
 
-class IJusoPort(ABC):
+class JusoUseCase(ABC):
     @abstractmethod
     async def introduce_myself(self, query: JusoIntroduceQuery) -> JusoIntroduceResult:
-        """주소 검색 서비스 자기소개 레포지토리 추상 메소드"""
+        """주소 검색 서비스 자기소개"""
         pass
 
     @abstractmethod
-    async def save_contacts(self, contacts: list[JusoContactCommand]) -> int:
-        """연락처 일괄 저장"""
+    async def upload_contacts(
+        self, contacts: list[JusoContactCommand]
+    ) -> JusoContactUploadResult:
+        """Google 주소록 CSV 업로드"""
         pass
 
     @abstractmethod

@@ -16,8 +16,8 @@ class EmailSendResponseSchema(BaseModel):
 
 
 class EmailClassifySchema(BaseModel):
-    subject: str
-    body: str
+    subject: str = ""
+    body: str = ""
 
 
 class EmailClassifyResponseSchema(BaseModel):

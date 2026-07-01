@@ -6,10 +6,10 @@ from apps.automode.app.dtos.email_request_dto import (
     EmailIntroduceQuery,
     EmailIntroduceResult,
 )
-from apps.automode.app.ports.output.i_email_introduce_port import IEmailIntroducePort
+from apps.automode.app.ports.output.email_introduce_port import EmailIntroducePort
 
 
-class EmailIntroduceRepository(IEmailIntroducePort):
+class EmailIntroduceRepository(EmailIntroducePort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
